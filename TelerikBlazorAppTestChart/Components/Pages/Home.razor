@@ -1,0 +1,179 @@
+﻿@page "/"
+
+@using System.Timers
+
+
+<PageTitle>Testing Chart</PageTitle>
+
+<TelerikChart @ref="Chart2" Transitions="false" RenderAs="@RenderingMode.Canvas" Width="100%" >
+    <ChartLegend Visible="false"></ChartLegend>
+
+    <ChartSeriesItems>
+
+        <ChartSeries Type="ChartSeriesType.ScatterLine"
+        Data="@Ticks"
+        YField="@nameof(TradeApi.Price)"
+        XField="@nameof(TradeApi.IndexForChart)"
+        SizeField="@nameof(TradeApi.Volume)">
+
+        </ChartSeries>
+    </ChartSeriesItems>
+
+    <ChartYAxes>
+        <ChartYAxis Max="@maxchart" Min="@minchart">
+            <ChartYAxisTitle Text="TestBubbles"></ChartYAxisTitle>
+        </ChartYAxis>
+    </ChartYAxes>
+
+</TelerikChart>
+
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoUp">UP</TelerikButton>
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoDown">Down</TelerikButton>
+
+
+@code {
+    private Timer _timer;
+
+    public enum Side
+    {
+        /// <summary>
+        /// buy
+        /// купля
+        /// </summary>
+        Buy,
+
+        /// <summary>
+        /// sell
+        /// продажа
+        /// </summary>
+        Sell,
+
+        //пустое направление.
+        Empty
+    }
+
+    public class TradeApi
+    {
+
+        public string SecurityName { get; set; }
+        public string TransactionID { get; set; }
+        public string SecurityId { get; set; }
+        public DateTime Time { get; set; }
+        public Side Side { get; set; }
+
+        public decimal Volume { get; set; }
+        public decimal Price { get; set; }
+        public int IndexForChart { get; set; }
+    }
+
+    public List<TradeApi> Ticks { get; set; } 
+    public TelerikChart Chart2 { get; set; }
+    double minchart { get; set; } = 0;
+    double maxchart { get; set; } = 300;
+
+    int i = 0;
+
+
+    protected override void OnInitialized()
+    {
+
+        _timer = new System.Timers.Timer(100);
+
+        Ticks = new List<TradeApi>();
+
+        _timer.Elapsed += (s, e) =>
+        {
+            i++;
+            // if(i>10)
+            //     _timer.Stop();
+
+            var tick = new TradeApi()
+            {
+                IndexForChart = i,
+                Price = new Random().Next(20,70),
+                SecurityId = "si-3.25",
+                Side = Side.Buy,
+                Time = DateTime.Now,
+                Volume = new Random().Next(1,10)
+            };
+
+            ProcessTick(tick);
+        };
+        _timer.Start();
+
+        base.OnInitialized();
+    }
+
+    private void ProcessTick(TradeApi tick)
+    {
+        lock (locker)
+        {
+
+            Ticks.Add(tick);
+
+            if (Ticks.Count > 30)
+                Ticks.RemoveAt(0);
+        }
+
+         InvokeAsync(StateHasChanged);
+        //InvokeAsync(Chart2.Refresh);
+    }
+
+    object locker = new object();
+
+    decimal higher = 0;
+    decimal lowre = 0;
+
+
+    int click1 = 0;
+    private void GoUp()
+    {
+        click1++;
+
+        minchart += 25;
+        maxchart += 25 ;
+        // lock (locker)
+        // {
+
+
+        //     foreach (var tick in Ticks)
+        //     {
+        //         tick.Price += 3;
+        //     }
+        // }
+
+        // if(click1==1)
+        // InvokeAsync(StateHasChanged);
+        // else 
+            Chart2.Refresh();
+
+    }
+
+    private void GoDown()
+    {
+        click1++;
+
+        minchart -= 25;
+        maxchart -= 25;
+
+        // if(click1==1)
+        //     InvokeAsync(StateHasChanged);
+        // else 
+            Chart2.Refresh();
+
+        // lock (locker)
+        // {
+
+        //     foreach (var tick in Ticks)
+        //     {
+        //         tick.Price -= 3;
+        //     }
+        // }
+    }
+
+    private void OnMouseWheel()
+    {
+       
+    }
+
+}
