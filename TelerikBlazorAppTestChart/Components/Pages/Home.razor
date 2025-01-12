@@ -1,37 +1,104 @@
 ﻿@page "/"
 
 @using System.Timers
+@using Lock = System.Threading.Lock
 
 
 <PageTitle>Testing Chart</PageTitle>
 
-<TelerikChart @ref="Chart2" Transitions="false" RenderAs="@RenderingMode.Canvas" Width="100%" >
+<TelerikChart @ref="Chart2"  Transitions="false" RenderAs="@RenderingMode.Canvas" Width="100%" >
     <ChartLegend Visible="false"></ChartLegend>
-
+    <ChartPannable Enabled="true"></ChartPannable>
     <ChartSeriesItems>
+
+        @*   <ChartSeries Type="ChartSeriesType.Line"
+                     Data="@Ticks2"
+                     Field="@nameof(TradeApi.Price)"
+                     ColorField="@nameof(TradeApi.Color)"> *@
+
+        <ChartSeries Type="ChartSeriesType.Bubble"
+        Data="@Ticks2"
+        YField="@nameof(TradeApi.Price)"
+        XField="@nameof(TradeApi.IndexForChart)"
+        SizeField="@nameof(TradeApi.Volume)"
+        ColorField="@nameof(TradeApi.Color)">
+
+
+        </ChartSeries> 
+
 
         <ChartSeries Type="ChartSeriesType.ScatterLine"
         Data="@Ticks"
         YField="@nameof(TradeApi.Price)"
         XField="@nameof(TradeApi.IndexForChart)"
-        SizeField="@nameof(TradeApi.Volume)">
+        >
 
-        </ChartSeries>
+            <ChartSeriesMarkers Visible="false">
+
+            </ChartSeriesMarkers>
+
+
+            <ChartSeries Type="ChartSeriesType.Bubble"
+            Data="@Ticks"
+            YField="@nameof(TradeApi.Price)"
+            XField="@nameof(TradeApi.IndexForChart)"
+            SizeField="@nameof(TradeApi.Volume)"
+            ColorField="@nameof(TradeApi.Color)"
+            >
+                <ChartSeriesLabels Visible="true"
+                Template="chartSeriesLabelTemplate"
+                AriaTemplate="chartSeriesAriaTemplate" />
+            </ChartSeries>  
+
+        </ChartSeries> 
+
+
+
+        @*      YField="@nameof(TradeApi.Price)"
+        XField="@nameof(TradeApi.IndexForChart)
+        SizeField="@nameof(TradeApi.Volume)"> *@
+
     </ChartSeriesItems>
 
+
+    @*    <ChartValueAxes>
+        <ChartValueAxis Min="0" Max="30" ></ChartValueAxis>
+    </ChartValueAxes> *@
+
+    <ChartXAxes>
+        <ChartXAxis Max="@i" Min="@(i-maxamount)" Visible="false">
+        </ChartXAxis>
+    </ChartXAxes>
+
     <ChartYAxes>
-        <ChartYAxis Max="@maxchart" Min="@minchart">
-            <ChartYAxisTitle Text="TestBubbles"></ChartYAxisTitle>
+        <ChartYAxis Min="@minchart" Max="@maxchart" Visible="false">
         </ChartYAxis>
-    </ChartYAxes>
+    </ChartYAxes>  
 
 </TelerikChart>
+
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@TurnOnOff">ON/OFF</TelerikButton>
 
 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoUp">UP</TelerikButton>
 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoDown">Down</TelerikButton>
 
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale">CnahgeScale</TelerikButton>
+
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale2">CnahgeScale2</TelerikButton>
+
+<script suppress-error="BL9992">
+    function chartSeriesLabelTemplate(context) {
+    return context.dataItem.Volume;
+    }
+
+</script>
 
 @code {
+
+    //TODO: 1) странное масштабирование на старте
+    //TODO: 2) бага с исчезнование -> лицензия телерика 
+
+
     private Timer _timer;
 
     public enum Side
@@ -55,68 +122,130 @@
     public class TradeApi
     {
 
+
         public string SecurityName { get; set; }
         public string TransactionID { get; set; }
         public string SecurityId { get; set; }
         public DateTime Time { get; set; }
         public Side Side { get; set; }
 
-        public decimal Volume { get; set; }
+        public double? Volume { get; set; }
+
         public decimal Price { get; set; }
         public int IndexForChart { get; set; }
+
+        public string Color { get; set; }
+        public double Transparency { get; set; }
     }
 
     public List<TradeApi> Ticks { get; set; } 
+    public List<TradeApi> Ticks2 { get; set; }
+
+
     public TelerikChart Chart2 { get; set; }
     double minchart { get; set; } = 0;
     double maxchart { get; set; } = 300;
 
-    int i = 0;
 
+
+    int i = 1;
+
+    bool busy = false;
+
+    List<TradeApi> AllTicks = new List<TradeApi>();
 
     protected override void OnInitialized()
     {
 
-        _timer = new System.Timers.Timer(100);
+        _timer = new System.Timers.Timer(200);
 
         Ticks = new List<TradeApi>();
+        Ticks2 = new();
+
+        Ticks2.Add(new TradeApi(){IndexForChart = 0, Volume = 100,});
+
 
         _timer.Elapsed += (s, e) =>
         {
-            i++;
-            // if(i>10)
-            //     _timer.Stop();
 
-            var tick = new TradeApi()
+            // lock (locker)
             {
-                IndexForChart = i,
-                Price = new Random().Next(20,70),
-                SecurityId = "si-3.25",
-                Side = Side.Buy,
-                Time = DateTime.Now,
-                Volume = new Random().Next(1,10)
-            };
+                // if (busy)
+                // {
+                //     Console.WriteLine($"busy {i}");
+                //     return;
+                // }
 
-            ProcessTick(tick);
+                // busy = true;
+
+                i++;
+                // if (i > 100)
+                //     i = 100;
+
+                var r = new Random().Next(0, 2);
+
+
+
+                var tick = new TradeApi()
+                {
+                    IndexForChart = i,
+                    Price = new Random().Next(20, 70),
+                    SecurityId = "si-3.25",
+                    Side = Side.Buy,
+                    Time = DateTime.Now,
+                    Volume =new Random().Next(1, 20)
+                };
+
+                if (r == 0)
+                    tick.Color = "red";
+                else
+                {
+                    tick.Color = "green";
+                }
+
+                AllTicks.Add(tick);
+
+                if (ONOFF)
+                {
+                    // Console.WriteLine($"index={tick.IndexForChart} | tick {tick.Price} ");
+                    ProcessTick(tick);
+                }
+
+                busy = false;
+            }
         };
         _timer.Start();
 
         base.OnInitialized();
     }
 
+    int maxamount = 30;
+
+    public void ChangeScale()
+    {
+        maxamount = maxamount / 2;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void ChangeScale2()
+    {
+        maxamount = maxamount * 2;
+        InvokeAsync(StateHasChanged);
+    }
+
     private void ProcessTick(TradeApi tick)
     {
-        lock (locker)
+        Ticks.Add(tick);
+      
+
+        if (Ticks.Count > maxamount)
         {
-
-            Ticks.Add(tick);
-
-            if (Ticks.Count > 30)
-                Ticks.RemoveAt(0);
+            Ticks.RemoveAt(1);
+           
         }
 
-         InvokeAsync(StateHasChanged);
-        //InvokeAsync(Chart2.Refresh);
+        InvokeAsync(StateHasChanged); //.GetAwaiter().GetResult();
+                                      //InvokeAsync(Chart2.Refresh);
     }
 
     object locker = new object();
@@ -145,7 +274,7 @@
         // if(click1==1)
         // InvokeAsync(StateHasChanged);
         // else 
-            Chart2.Refresh();
+        Chart2.Refresh();
 
     }
 
@@ -157,9 +286,9 @@
         maxchart -= 25;
 
         // if(click1==1)
-        //     InvokeAsync(StateHasChanged);
+        //     
         // else 
-            Chart2.Refresh();
+        Chart2.Refresh();
 
         // lock (locker)
         // {
@@ -173,7 +302,29 @@
 
     private void OnMouseWheel()
     {
-       
+
     }
+
+    bool ONOFF = true;
+    private void TurnOnOff(MouseEventArgs obj)
+    {
+        ONOFF = !ONOFF;
+
+        var copylist = AllTicks.ToList();
+
+        foreach (var trade in copylist)
+        {
+            Console.WriteLine($"index={trade.IndexForChart} | tick {trade.Price} ");
+        }
+
+        AllTicks.Clear();
+    }
+
+    private double? ChangeSize(TradeApi trade)
+    {
+        return 10;
+    }
+
+
 
 }
