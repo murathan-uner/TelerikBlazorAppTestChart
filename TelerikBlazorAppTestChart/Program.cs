@@ -1,4 +1,7 @@
+using TelerikBlazorAppTestChart;
 using TelerikBlazorAppTestChart.Components;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,8 @@ builder.Services.AddTelerikBlazor();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped<JsInteropService>();
 
 var app = builder.Build();
 

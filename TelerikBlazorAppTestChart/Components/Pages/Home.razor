@@ -1,330 +1,288 @@
 ﻿@page "/"
 
-@using System.Timers
-@using Lock = System.Threading.Lock
-
-
-<PageTitle>Testing Chart</PageTitle>
-
-<TelerikChart @ref="Chart2"  Transitions="false" RenderAs="@RenderingMode.Canvas" Width="100%" >
-    <ChartLegend Visible="false"></ChartLegend>
-    <ChartPannable Enabled="true"></ChartPannable>
-    <ChartSeriesItems>
-
-        @*   <ChartSeries Type="ChartSeriesType.Line"
-                     Data="@Ticks2"
-                     Field="@nameof(TradeApi.Price)"
-                     ColorField="@nameof(TradeApi.Color)"> *@
-
-        <ChartSeries Type="ChartSeriesType.Bubble"
-        Data="@Ticks2"
-        YField="@nameof(TradeApi.Price)"
-        XField="@nameof(TradeApi.IndexForChart)"
-        SizeField="@nameof(TradeApi.Volume)"
-        ColorField="@nameof(TradeApi.Color)">
-
-
-        </ChartSeries> 
-
-
-        <ChartSeries Type="ChartSeriesType.ScatterLine"
-        Data="@Ticks"
-        YField="@nameof(TradeApi.Price)"
-        XField="@nameof(TradeApi.IndexForChart)"
-        >
-
-            <ChartSeriesMarkers Visible="false">
-
-            </ChartSeriesMarkers>
-
-
-            <ChartSeries Type="ChartSeriesType.Bubble"
-            Data="@Ticks"
-            YField="@nameof(TradeApi.Price)"
-            XField="@nameof(TradeApi.IndexForChart)"
-            SizeField="@nameof(TradeApi.Volume)"
-            ColorField="@nameof(TradeApi.Color)"
-            >
-                <ChartSeriesLabels Visible="true"
-                Template="chartSeriesLabelTemplate"
-                AriaTemplate="chartSeriesAriaTemplate" />
-            </ChartSeries>  
-
-        </ChartSeries> 
-
-
-
-        @*      YField="@nameof(TradeApi.Price)"
-        XField="@nameof(TradeApi.IndexForChart)
-        SizeField="@nameof(TradeApi.Volume)"> *@
-
-    </ChartSeriesItems>
-
-
-    @*    <ChartValueAxes>
-        <ChartValueAxis Min="0" Max="30" ></ChartValueAxis>
-    </ChartValueAxes> *@
-
-    <ChartXAxes>
-        <ChartXAxis Max="@i" Min="@(i-maxamount)" Visible="false">
-        </ChartXAxis>
-    </ChartXAxes>
-
-    <ChartYAxes>
-        <ChartYAxis Min="@minchart" Max="@maxchart" Visible="false">
-        </ChartYAxis>
-    </ChartYAxes>  
-
-</TelerikChart>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@TurnOnOff">ON/OFF</TelerikButton>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoUp">UP</TelerikButton>
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoDown">Down</TelerikButton>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale">CnahgeScale</TelerikButton>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale2">CnahgeScale2</TelerikButton>
-
-<script suppress-error="BL9992">
-    function chartSeriesLabelTemplate(context) {
-    return context.dataItem.Volume;
+<style>
+    .cardnew {
+        height: 800px;
+    }
+    /* Общие стили для WorkWindow */
+    .workwindow-container {
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        min-height: 250px;
     }
 
-</script>
-
-@code {
-
-    //TODO: 1) странное масштабирование на старте
-    //TODO: 2) бага с исчезнование -> лицензия телерика 
-
-
-    private Timer _timer;
-
-    public enum Side
-    {
-        /// <summary>
-        /// buy
-        /// купля
-        /// </summary>
-        Buy,
-
-        /// <summary>
-        /// sell
-        /// продажа
-        /// </summary>
-        Sell,
-
-        //пустое направление.
-        Empty
+    .k-table-row {
+        font-size: 10px;
+        line-height: 10px;
     }
 
-    public class TradeApi
-    {
-
-
-        public string SecurityName { get; set; }
-        public string TransactionID { get; set; }
-        public string SecurityId { get; set; }
-        public DateTime Time { get; set; }
-        public Side Side { get; set; }
-
-        public double? Volume { get; set; }
-
-        public decimal Price { get; set; }
-        public int IndexForChart { get; set; }
-
-        public string Color { get; set; }
-        public double Transparency { get; set; }
+    .telerik-table {
+        padding: 0px;
     }
 
-    public List<TradeApi> Ticks { get; set; } 
-    public List<TradeApi> Ticks2 { get; set; }
+    .k-grid-md td, .k-grid-md .k-table-td {
+        padding-block: 0px !important;
+        padding-inline: 0px !important;
+    }
+
+    .small-row-height .k-placeholder-line {
+        display: none;
+    }
+
+    .small-row-height.k-grid td {
+        margin: 0;
+        padding: 0;
+    }
 
 
-    public TelerikChart Chart2 { get; set; }
-    double minchart { get; set; } = 0;
-    double maxchart { get; set; } = 300;
+    /* Стили для контейнера с таблицей */
+    .table-container {
+        height: 90vh;
+        scrollbar-width: thin;
+        overflow-y: auto; /* Включаем вертикальный скроллинг */
+    }
+
+    /* Стили для самой таблицы */
+    .telerik-grid {
+        width: 100%;
+        height: 100%;
+    }
+
+        /* Стили для контента таблицы */
+        .telerik-grid .k-grid-content {
+            overflow-y: auto; /* Включаем вертикальный скроллинг в таблице */
+        }
+
+    /* Заголовок WorkWindow */
+    .workwindow-container h3 {
+        margin-top: 0;
+        font-size: 18px;
+        color: #333;
+        font-weight: bold;
+    }
+
+    /* Стили для TileLayout (если нужно стилизовать плитки) */
+    .telerik-tilelayout-item {
+        min-width: 285px;
+        min-height: 285px;
+        margin-bottom: 15px;
+    }
+
+    .tile-content {
+        background-color: #fff;
+        border-radius: 5px;
+    }
+
+    .k-grid-footer {
+        padding-inline-end: 0px !important;
+    }
+
+    .dxbl-chart-root .dxbl-chart {
+        padding: 0px !important;
+    }
+
+
+    .k-grid-content {
+        scrollbar-width: none;
+    }
+
+    .k-grid-header {
+        padding-inline-end: 0px !important;
+    }
+    /* Дополнительные улучшения для внешнего вида */
+    .telerik-grid .k-header {
+        background-color: #f0f0f0;
+        color: #333;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .telerik-grid .k-grid-header {
+        border-bottom: 1px solid #ddd;
+    }
+
+    .telerik-grid .k-grid-table {
+        border-spacing: 0;
+        border-collapse: collapse;
+    }
+
+        .telerik-grid .k-grid-table td,
+        .telerik-grid .k-grid-table th {
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+    .k-card-body {
+        padding: 0px;
+        padding-block: 0 !important;
+        padding-inline: 0 !important;
+    }
+    /*.k-tilelayout-item-header{
+            display: none;
+            }*/
+    .k-grid-content {
+        padding: 0px;
+    }
+
+    .k-tilelayout-item-body k-card-body {
+        padding: 0px;
+    }
+    /* Убираем паддинги для всего TileLayout */
+    .telerik-tilelayout {
+        padding: 0;
+    }
+
+    .gridlayout-item {
+        font-size: 1.2em;
+        font-weight: 500;
+        text-align: center;
+        width: 100%;
+        height: 800px;
+        text-align: center;
+        position: relative;
+        z-index: 0;
+        display: flex;
+        align-items: start;
+        justify-content: start;
+    }
+
+        .gridlayout-item:before {
+            content: " ";
+            position: absolute;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            opacity: 0.4;
+        }
+
+    .gridlayout-header:before {
+        background-color: var(--bs-red);
+    }
+
+    .gridlayout-content:before {
+        background-color: var(--bs-yellow);
+    }
+
+    .gridlayout-left-side-bar:before {
+        background-color: var(--bs-green);
+    }
+
+    .gridlayout-right-side-bar:before {
+    }
+
+    .gridlayout-footer:before {
+        background-color: var(--bs-blue);
+        opacity: 0.5;
+    }
+
+    .dxgrid {
+        height: 100%;
+    }
+
+
+    .dxbl-grid {
+        --dxbl-grid-font-size: 10px;
+    }
+
+    .chart {
+        height: 90vh;
+    }
+
+    .cell-text {
+        font-weight: 750 !important;
+    }
+
+    .highlighted-item {
+        background-color: #edc6c6
+    }
+
+    .highlighted-item2 {
+        background-color: #a0dbc6
+    }
+
+    .transparent-item {
+        background-color: transparent
+    }
+
+    .card-body {
+        padding: 0;
+    }
+
+    .removeOrder {
+        z-index: 201;
+        flex-shrink: 0;
+        cursor: pointer;
+        float: right;
+    }
+
+    .restVolume {
+        display: flex;
+    }
+
+    .restVolumeSpan {
+        flex-shrink: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis
+    }
+
+    .k-resize-handle {
+        width: 4px !important;
+    }
+
+    .grid-header {
+        display: none;
+    }
+
+</style>
+
+<TelerikGridLayout>
+        <GridLayoutColumns>
+            <Telerik.Blazor.Components.GridLayoutColumn Width="20%" />
+            <Telerik.Blazor.Components.GridLayoutColumn Width="47%" />
+            <Telerik.Blazor.Components.GridLayoutColumn Width="33%" />
+        </GridLayoutColumns>
+
+        <GridLayoutRows>
+            <Telerik.Blazor.Components.GridLayoutRow />
+        </GridLayoutRows>
+
+        <GridLayoutItems>
+            <Telerik.Blazor.Components.GridLayoutItem Row="1" Column="1">
+
+
+            </Telerik.Blazor.Components.GridLayoutItem>
+            <Telerik.Blazor.Components.GridLayoutItem Row="1" Column="2">
+
+                <ChartComponent></ChartComponent>
+
+            </Telerik.Blazor.Components.GridLayoutItem>
+            <Telerik.Blazor.Components.GridLayoutItem Row="1" Column="3">
+
+                <TickGrid></TickGrid>
+
+            </Telerik.Blazor.Components.GridLayoutItem>
+        </GridLayoutItems>
+    </TelerikGridLayout>
 
 
 
-    int i = 1;
 
-    bool busy = false;
 
-    List<TradeApi> AllTicks = new List<TradeApi>();
+@code{
 
-    protected override void OnInitialized()
+
+    public static System.Timers.Timer CreateTimerAndStart(Action method, int ms, bool repeat = true)
     {
-
-        _timer = new System.Timers.Timer(200);
-
-        Ticks = new List<TradeApi>();
-        Ticks2 = new();
-
-        Ticks2.Add(new TradeApi(){IndexForChart = 0, Volume = 100,});
-
-
-        _timer.Elapsed += (s, e) =>
+        var timer = new System.Timers.Timer(ms) { AutoReset = repeat };
+        timer.Elapsed += (s, e) =>
         {
-
-            // lock (locker)
-            {
-                // if (busy)
-                // {
-                //     Console.WriteLine($"busy {i}");
-                //     return;
-                // }
-
-                // busy = true;
-
-                i++;
-                // if (i > 100)
-                //     i = 100;
-
-                var r = new Random().Next(0, 2);
-
-
-
-                var tick = new TradeApi()
-                {
-                    IndexForChart = i,
-                    Price = new Random().Next(20, 70),
-                    SecurityId = "si-3.25",
-                    Side = Side.Buy,
-                    Time = DateTime.Now,
-                    Volume =new Random().Next(1, 20)
-                };
-
-                if (r == 0)
-                    tick.Color = "red";
-                else
-                {
-                    tick.Color = "green";
-                }
-
-                AllTicks.Add(tick);
-
-                if (ONOFF)
-                {
-                    // Console.WriteLine($"index={tick.IndexForChart} | tick {tick.Price} ");
-                    ProcessTick(tick);
-                }
-
-                busy = false;
-            }
+            method?.Invoke();
         };
-        _timer.Start();
-
-        base.OnInitialized();
+        timer.Start();
+        return timer;
     }
-
-    int maxamount = 30;
-
-    public void ChangeScale()
-    {
-        maxamount = maxamount / 2;
-        InvokeAsync(StateHasChanged);
-    }
-
-    public void ChangeScale2()
-    {
-        maxamount = maxamount * 2;
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void ProcessTick(TradeApi tick)
-    {
-        Ticks.Add(tick);
-      
-
-        if (Ticks.Count > maxamount)
-        {
-            Ticks.RemoveAt(1);
-           
-        }
-
-        InvokeAsync(StateHasChanged); //.GetAwaiter().GetResult();
-                                      //InvokeAsync(Chart2.Refresh);
-    }
-
-    object locker = new object();
-
-    decimal higher = 0;
-    decimal lowre = 0;
-
-
-    int click1 = 0;
-    private void GoUp()
-    {
-        click1++;
-
-        minchart += 25;
-        maxchart += 25 ;
-        // lock (locker)
-        // {
-
-
-        //     foreach (var tick in Ticks)
-        //     {
-        //         tick.Price += 3;
-        //     }
-        // }
-
-        // if(click1==1)
-        // InvokeAsync(StateHasChanged);
-        // else 
-        Chart2.Refresh();
-
-    }
-
-    private void GoDown()
-    {
-        click1++;
-
-        minchart -= 25;
-        maxchart -= 25;
-
-        // if(click1==1)
-        //     
-        // else 
-        Chart2.Refresh();
-
-        // lock (locker)
-        // {
-
-        //     foreach (var tick in Ticks)
-        //     {
-        //         tick.Price -= 3;
-        //     }
-        // }
-    }
-
-    private void OnMouseWheel()
-    {
-
-    }
-
-    bool ONOFF = true;
-    private void TurnOnOff(MouseEventArgs obj)
-    {
-        ONOFF = !ONOFF;
-
-        var copylist = AllTicks.ToList();
-
-        foreach (var trade in copylist)
-        {
-            Console.WriteLine($"index={trade.IndexForChart} | tick {trade.Price} ");
-        }
-
-        AllTicks.Clear();
-    }
-
-    private double? ChangeSize(TradeApi trade)
-    {
-        return 10;
-    }
-
-
-
 }

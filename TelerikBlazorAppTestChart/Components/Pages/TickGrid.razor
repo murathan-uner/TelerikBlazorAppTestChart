@@ -1,0 +1,184 @@
+﻿@inject JsInteropService jsInteropService
+@inject IJSRuntime JSRuntime
+
+<TelerikGrid @ref="TicksGrid" 
+             Id="@GridTableId"
+             EnableLoaderContainer="true"
+RowHeight="15"
+Height="30vh"
+Data="@Ticks"
+TItem="@ChartComponent.TradeApi"
+ScrollMode="@GridScrollMode.Virtual"
+Pageable="false"
+Sortable="false"
+PageSize="150">
+    <GridColumns>
+        <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Price)"  />
+        <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+    </GridColumns>
+</TelerikGrid>
+
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@Scroll">CnahgeScale2</TelerikButton>
+
+@code {
+
+    List<ChartComponent.TradeApi> Ticks { get; set; }
+    public TelerikGrid<ChartComponent.TradeApi> TicksGrid { get; set; }
+
+    private void UpdateClastersGrid()
+    {
+        InvokeAsync(() =>
+        {
+            try
+            {
+                TicksGrid.Data = Ticks;
+                TicksGrid?.Rebind();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }).GetAwaiter().GetResult();
+    }
+
+    int Scale = 1;
+    Dictionary<decimal, int> IndexesQuotes = new Dictionary<decimal, int>();
+
+    private List<ChartComponent.TradeApi> BuildInitialQuotes(decimal bestbid)
+    {
+        try
+        {
+            int levels = 3000;
+
+            //округление
+            // var min = (bestbid * 0.7m);
+
+            decimal agrregatedlevel = bestbid - bestbid % (1 * Scale);
+
+
+            //previous
+            // var min = bestbid - levels * secutityMain.PriceStep * Scale;
+            // var realmin = min - min % secutityMain.PriceStep * Scale;
+            // var max = bestbid + levels * secutityMain.PriceStep;
+            // var realmax = max - max % secutityMain.PriceStep;
+
+            //new
+            var realmin = agrregatedlevel - levels * 1 * Scale;
+            var realmax = agrregatedlevel + levels * 1 * Scale;
+
+
+            int index = 0;
+
+            List<ChartComponent.TradeApi> localTicks = new();
+
+            // for (decimal i = realmin; i < realmax; i += secutityMain.PriceStep)
+            // {
+            // 	IndexesQuotes.TryAdd(i, index);
+            // 	localQuotesBuild.Add(MarketDepthLevel.GetEmptyLevel(i));
+            // 	//LocalQuotesBuild.Add(new MarketDepthLevel() { Ask = 1, Price = i, });
+            // 	index++;
+            // }
+
+            if (Ticks == null)
+                Ticks = new();
+            else
+                Ticks.Clear();
+
+            IndexesQuotes.Clear();
+
+            for (decimal i = realmax; i > realmin; i -= 1 * Scale)
+            {
+                IndexesQuotes.TryAdd(i, index);
+                localTicks.Add(new ChartComponent.TradeApi(){Price = i,Volume = new Random().Next(1,20)});
+                //LocalQuotesBuild.Add(new MarketDepthLevel() { Ask = 1, Price = i, });
+                index++;
+            }
+
+            Console.WriteLine($" RIH Created INITIAL EMPTY QUOTES SCALE {Scale}");
+
+            //Quotes = localQuotesBuild;
+
+            return localTicks;
+
+
+            //пришлось засунуть местами плохо работает..
+            //InvokeAsync(StateHasChanged);
+
+            //QuotesGrid.Rebind();
+
+
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return null;
+
+        }
+
+    }
+
+    public async Task ScrollTo<T>(int index, TelerikGrid<T> _grid)
+    {
+
+        if (_grid != null)
+        {
+            var state = _grid.GetState();
+            //TODO по хорошему надо выяснить сколько элементов показывается на экране...
+            var scrollindex = index - 20;
+            state.Skip = scrollindex;
+
+            //TODO: Может выскочить ошибка
+            Console.WriteLine($"Scrolling to {scrollindex} {typeof(T)}");
+            await _grid.SetStateAsync(state);
+        }
+
+    }
+
+    private string GridTableId { get; set; } = Guid.NewGuid().ToString();
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+
+        if (firstRender)
+        {
+            jsInteropService.OnScroll += OnScroll;
+            await JSRuntime.InvokeVoidAsync("getScrollEvent", GridTableId);
+           
+
+            var timer = new System.Timers.Timer(500){AutoReset = false};
+            timer.Elapsed += async (s, e) =>
+            {
+                Ticks = BuildInitialQuotes(3000);
+                //UpdateClastersGrid();
+
+                InvokeAsync(StateHasChanged);
+                ScrollTo(3000, TicksGrid);
+                InvokeAsync(StateHasChanged);
+
+
+                Home.CreateTimerAndStart(() =>
+                {
+                    //ScrollTo(3000, TicksGrid);
+                   // InvokeAsync(StateHasChanged);
+                }, 500, false);
+               
+
+            };
+            timer.Start();
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
+    private void OnScroll(string arg1, string arg2, string arg3, int arg4)
+    {
+      
+    }
+
+    private void Scroll()
+    {
+        ScrollTo(2000, TicksGrid);
+    }
+
+}
