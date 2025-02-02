@@ -1,5 +1,6 @@
 using TelerikBlazorAppTestChart;
 using TelerikBlazorAppTestChart.Components;
+using Toolbelt.Blazor.Extensions.DependencyInjection;
 
 
 
@@ -11,6 +12,8 @@ builder.Services.AddTelerikBlazor();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddHotKeys2();
 
 builder.Services.AddScoped<JsInteropService>();
 

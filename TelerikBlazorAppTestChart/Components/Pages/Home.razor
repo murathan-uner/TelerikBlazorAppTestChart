@@ -49,10 +49,10 @@
         height: 100%;
     }
 
-        /* Стили для контента таблицы */
-        .telerik-grid .k-grid-content {
-            overflow-y: auto; /* Включаем вертикальный скроллинг в таблице */
-        }
+    /* Стили для контента таблицы */
+    .telerik-grid .k-grid-content {
+        overflow-y: auto; /* Включаем вертикальный скроллинг в таблице */
+    }
 
     /* Заголовок WorkWindow */
     .workwindow-container h3 {
@@ -107,11 +107,11 @@
         border-collapse: collapse;
     }
 
-        .telerik-grid .k-grid-table td,
-        .telerik-grid .k-grid-table th {
-            text-align: center;
-            border: 1px solid #ddd;
-        }
+    .telerik-grid .k-grid-table td,
+    .telerik-grid .k-grid-table th {
+        text-align: center;
+        border: 1px solid #ddd;
+    }
 
     .k-card-body {
         padding: 0px;
@@ -147,16 +147,16 @@
         justify-content: start;
     }
 
-        .gridlayout-item:before {
-            content: " ";
-            position: absolute;
-            z-index: -1;
-            width: 100%;
-            height: 100%;
-            left: 0;
-            top: 0;
-            opacity: 0.4;
-        }
+    .gridlayout-item:before {
+        content: " ";
+        position: absolute;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        opacity: 0.4;
+    }
 
     .gridlayout-header:before {
         background-color: var(--bs-red);
@@ -239,11 +239,15 @@
 
 </style>
 
+
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@PlusSize">Plus</TelerikButton>
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@MinusSize">Minus</TelerikButton>
+
 <TelerikGridLayout>
         <GridLayoutColumns>
             <Telerik.Blazor.Components.GridLayoutColumn Width="20%" />
-            <Telerik.Blazor.Components.GridLayoutColumn Width="47%" />
-            <Telerik.Blazor.Components.GridLayoutColumn Width="33%" />
+            <Telerik.Blazor.Components.GridLayoutColumn Width="@gridsizestting" />
+        <Telerik.Blazor.Components.GridLayoutColumn Width="33%" />
         </GridLayoutColumns>
 
         <GridLayoutRows>
@@ -274,6 +278,8 @@
 
 @code{
 
+    string gridsizestting => gridsize.ToString() + "%";
+    int gridsize = 47;
 
     public static System.Timers.Timer CreateTimerAndStart(Action method, int ms, bool repeat = true)
     {
@@ -285,4 +291,17 @@
         timer.Start();
         return timer;
     }
+
+    private void PlusSize(MouseEventArgs obj)
+    {
+        gridsize += 2;
+        StateHasChanged();
+    }
+
+    private void MinusSize(MouseEventArgs obj)
+    {
+        gridsize -= 2;
+        StateHasChanged();
+    }
+
 }

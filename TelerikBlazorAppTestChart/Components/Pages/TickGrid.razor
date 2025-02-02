@@ -1,12 +1,22 @@
-﻿@inject JsInteropService jsInteropService
+﻿@using Telerik.DataSource.Extensions
+@inject JsInteropService jsInteropService
 @inject IJSRuntime JSRuntime
+@using Toolbelt.Blazor.HotKeys2
+@inject HotKeys HotKeys 
+
+@*OnStateChanged="@OnStateChanged"
+OnStateInit="@OnStateChanged"
+OnRowRender="@RowRender"
+*@
 
 <TelerikGrid @ref="TicksGrid" 
-             Id="@GridTableId"
-             EnableLoaderContainer="true"
+Id="@GridTableId"
+EnableLoaderContainer="true"
+             OnStateChanged="@OnStateChanged"
 RowHeight="15"
 Height="30vh"
 Data="@Ticks"
+
 TItem="@ChartComponent.TradeApi"
 ScrollMode="@GridScrollMode.Virtual"
 Pageable="false"
@@ -18,11 +28,14 @@ PageSize="150">
     </GridColumns>
 </TelerikGrid>
 
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@Scroll">CnahgeScale2</TelerikButton>
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@Scroll">Scroll</TelerikButton>
+<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale">CnahgeScale</TelerikButton>
 
 @code {
 
-    List<ChartComponent.TradeApi> Ticks { get; set; }
+    private HotKeysContext? _hotKeysContext;
+
+    List<ChartComponent.TradeApi> Ticks { get; set; } = new();
     public TelerikGrid<ChartComponent.TradeApi> TicksGrid { get; set; }
 
     private void UpdateClastersGrid()
@@ -43,6 +56,33 @@ PageSize="150">
 
     int Scale = 1;
     Dictionary<decimal, int> IndexesQuotes = new Dictionary<decimal, int>();
+
+    private async Task OnGridRead(GridReadEventArgs args)
+    {
+        var result = await Ticks.ToDataSourceResultAsync(args.Request);
+
+        if (result != null && result.Data != null)
+        {
+            var r2 = result.Data as IEnumerable<ChartComponent.TradeApi>;
+
+            if(r2.Count()>0)
+                Console.WriteLine($"skip = {args.Request.Skip} price= {r2.First().Price} ");
+        }
+
+        args.Data = result.Data;
+        args.Total = result.Total;
+
+    }
+
+    protected override bool ShouldRender()
+    {
+        if (_firstrender)
+            return false;
+
+
+        Console.WriteLine($"SHOULD  RENDER {DateTime.Now}");
+        return base.ShouldRender();
+    }
 
     private List<ChartComponent.TradeApi> BuildInitialQuotes(decimal bestbid)
     {
@@ -137,33 +177,26 @@ PageSize="150">
 
     private string GridTableId { get; set; } = Guid.NewGuid().ToString();
 
+
+    bool _firstrender = false;
     protected override async void OnAfterRender(bool firstRender)
     {
 
         if (firstRender)
         {
+            _firstrender = true;
             jsInteropService.OnScroll += OnScroll;
             await JSRuntime.InvokeVoidAsync("getScrollEvent", GridTableId);
-           
 
-            var timer = new System.Timers.Timer(500){AutoReset = false};
+
+            _hotKeysContext = this.HotKeys.CreateContext()
+                .Add(Toolbelt.Blazor.HotKeys2.Code.A, FooBar, new() { Description = "do foo bar." });
+
+
+            var timer = new System.Timers.Timer(200){AutoReset = true};
             timer.Elapsed += async (s, e) =>
             {
-                Ticks = BuildInitialQuotes(3000);
-                //UpdateClastersGrid();
-
-                InvokeAsync(StateHasChanged);
-                ScrollTo(3000, TicksGrid);
-                InvokeAsync(StateHasChanged);
-
-
-                Home.CreateTimerAndStart(() =>
-                {
-                    //ScrollTo(3000, TicksGrid);
-                   // InvokeAsync(StateHasChanged);
-                }, 500, false);
-               
-
+                BuildAll();
             };
             timer.Start();
         }
@@ -171,14 +204,105 @@ PageSize="150">
         base.OnAfterRender(firstRender);
     }
 
+    private void FooBar() // 👈 This will be invoked when Ctrl+Shift+A typed.
+    {
+        ChangeScale(null);
+    }
+
+
+    bool busy = false;
+    bool scrolled = false;
+    private void BuildAll()
+    {
+        if(busy)
+            return;
+
+        busy = true;
+
+        Ticks = BuildInitialQuotes(3000);
+        //UpdateClastersGrid();
+
+        //InvokeAsync(StateHasChanged);
+        
+        //InvokeAsync(StateHasChanged);
+        UpdateClastersGrid();
+
+        Home.CreateTimerAndStart(() => 
+        {
+
+            if (!scrolled)
+            {
+                ScrollTo(3000, TicksGrid);
+                scrolled = true;
+                UpdateClastersGrid();
+                busy = false;
+            }
+
+            GetStateAfterScroll();
+
+            InvokeAsync(StateHasChanged);
+        }, 500, false);
+
+
+        busy = false;
+    }
+
     private void OnScroll(string arg1, string arg2, string arg3, int arg4)
     {
-      
+
     }
 
     private void Scroll()
     {
         ScrollTo(2000, TicksGrid);
+
+
+    }
+
+    bool scrolllog = true;
+
+    public void GetStateAfterScroll()
+    {
+        // var state = TicksGrid.GetState();
+        // int realindex = 6000 - (int)state.Skip;
+
+      //  if (Ticks != null &&  Ticks.Count > (int)state.Skip && scrolllog)
+       //     Console.WriteLine($"price 1 = {Ticks[(int)state.Skip].Price}");
+    }
+
+
+    // SCROLL 
+    private void OnStateChanged(GridStateEventArgs<ChartComponent.TradeApi> gridState)
+    {
+       // int realindex = 6000 - (int)gridState.GridState.Skip;
+        //int realindex = (int)gridState.GridState.Skip;
+
+        if (Ticks != null && Ticks.Count > (int)gridState.GridState.Skip && scrolllog)
+            Console.WriteLine($"ONSTATE price SCROLL = {Ticks[(int)gridState.GridState.Skip].Price}");
+
+
+        // var skip = (int)TicksGrid.GetState().Skip;
+
+        // if (Ticks != null && Ticks.Count > (int)skip && scrolllog)
+        //     Console.WriteLine($"ONSTATE price SCROLL = {Ticks[(int)skip].Price}");
+    }
+
+    private void RowRender(GridRowRenderEventArgs row)
+    {
+       //  var skip= (int)TicksGrid.GetState().Skip;
+       // //  var lowprice = (row.Item as ChartComponent.TradeApi).Price+150;
+
+       // if (Ticks != null && Ticks.Count > skip)
+       // {
+       //      Console.WriteLine($"skip = {skip} skipprice{Ticks[skip].Price} ");
+       //     // Console.WriteLine($"skip = {skip} skipprice{Ticks[skip].Price} Rendered {lowprice}");
+       // }
+    }
+
+    private void ChangeScale(MouseEventArgs obj)
+    {
+        Scale +=1;
+        BuildAll();
     }
 
 }
