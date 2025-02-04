@@ -7,7 +7,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Telerik.UI.for.Blazor.Trial" Version="7.0.0" />
+		<PackageReference Include="Telerik.UI.for.Blazor" Version="7.1.0" />
 		<PackageReference Include="Toolbelt.Blazor.HotKeys2" Version="6.0.0" />
 	</ItemGroup>
 

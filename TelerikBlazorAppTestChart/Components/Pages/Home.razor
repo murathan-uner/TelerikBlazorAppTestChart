@@ -1,5 +1,7 @@
 ﻿@page "/"
 
+<link rel="stylesheet" href="css/custom-telerik.css" />
+
 <style>
     .cardnew {
         height: 800px;
@@ -229,10 +231,6 @@
         text-overflow: ellipsis
     }
 
-    .k-resize-handle {
-        width: 4px !important;
-    }
-
     .grid-header {
         display: none;
     }
@@ -244,33 +242,34 @@
 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@MinusSize">Minus</TelerikButton>
 
 <TelerikGridLayout>
-        <GridLayoutColumns>
-            <Telerik.Blazor.Components.GridLayoutColumn Width="20%" />
-            <Telerik.Blazor.Components.GridLayoutColumn Width="@gridsizestting" />
+    <GridLayoutColumns>
+        <Telerik.Blazor.Components.GridLayoutColumn Width="20%" />
+        <Telerik.Blazor.Components.GridLayoutColumn Width="@gridsizestting" />
         <Telerik.Blazor.Components.GridLayoutColumn Width="33%" />
-        </GridLayoutColumns>
+    </GridLayoutColumns>
 
-        <GridLayoutRows>
-            <Telerik.Blazor.Components.GridLayoutRow />
-        </GridLayoutRows>
+    <GridLayoutRows>
+        <Telerik.Blazor.Components.GridLayoutRow />
+    </GridLayoutRows>
 
-        <GridLayoutItems>
-            <Telerik.Blazor.Components.GridLayoutItem Row="1" Column="1">
+    <GridLayoutColumns>
+        <TelerikSplitter Orientation="@SplitterOrientation.Horizontal">
+            <SplitterPanes>
+                <SplitterPane Size="20%" Collapsible="false" Class="left-pane">
+                </SplitterPane>
 
+                <SplitterPane Collapsible="false" Class="center-pane">
+                    <ChartComponent></ChartComponent>
+                </SplitterPane>
 
-            </Telerik.Blazor.Components.GridLayoutItem>
-            <Telerik.Blazor.Components.GridLayoutItem Row="1" Column="2">
+                <SplitterPane Size="33%" Collapsible="false" Class="right-pane">
+                    <TickGrid></TickGrid>
+                </SplitterPane>
+            </SplitterPanes>
+        </TelerikSplitter>
+    </GridLayoutColumns>
 
-                <ChartComponent></ChartComponent>
-
-            </Telerik.Blazor.Components.GridLayoutItem>
-            <Telerik.Blazor.Components.GridLayoutItem Row="1" Column="3">
-
-                <TickGrid></TickGrid>
-
-            </Telerik.Blazor.Components.GridLayoutItem>
-        </GridLayoutItems>
-    </TelerikGridLayout>
+</TelerikGridLayout>
 
 
 

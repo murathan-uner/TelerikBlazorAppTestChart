@@ -1,0 +1,27 @@
+/* Splitter */
+.k-resize-handle {
+    display: none !important;
+}
+
+.k-splitbar {
+    z-index: 100;
+    background: transparent;
+}
+
+    .k-splitbar:hover {
+        background: transparent;
+    }
+
+.k-pane.left-pane {
+    margin-right: -3px !important;
+}
+
+.k-pane.right-pane {
+    margin-left: -3px !important;
+}
+
+.k-pane.center-pane {
+    margin-left: -3px !important;
+    margin-right: -3px !important;
+}
+/* Splitter */
