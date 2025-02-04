@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using TelerikBlazorAppTestChart.Components.Common
 
 <link rel="stylesheet" href="css/custom-telerik.css" />
 
@@ -242,7 +243,7 @@
 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@MinusSize">Minus</TelerikButton>
 
 <TelerikGridLayout>
-    <GridLayoutColumns>
+    @* <GridLayoutColumns>
         <Telerik.Blazor.Components.GridLayoutColumn Width="20%" />
         <Telerik.Blazor.Components.GridLayoutColumn Width="@gridsizestting" />
         <Telerik.Blazor.Components.GridLayoutColumn Width="33%" />
@@ -250,20 +251,24 @@
 
     <GridLayoutRows>
         <Telerik.Blazor.Components.GridLayoutRow />
-    </GridLayoutRows>
+    </GridLayoutRows> *@
 
     <GridLayoutColumns>
         <TelerikSplitter Orientation="@SplitterOrientation.Horizontal">
             <SplitterPanes>
-                <SplitterPane Size="20%" Collapsible="false" Class="left-pane">
+                <SplitterPane Size="@PaneSizeClusters" Collapsible="false" Class="clusters-pane" SizeChanged="@SizeChangedHandlerClusters">
                 </SplitterPane>
 
-                <SplitterPane Collapsible="false" Class="center-pane">
-                    <ChartComponent></ChartComponent>
+                <SplitterPane Size="@PaneSizeChart" Collapsible="false" Class="chart-pane" SizeChanged="@SizeChangedHandlerChart">
+                    <ChartComponent MaxAmount="@MaxAmount">
+                    </ChartComponent>
                 </SplitterPane>
 
-                <SplitterPane Size="33%" Collapsible="false" Class="right-pane">
+                <SplitterPane Size="@PaneSizeQuotes" Collapsible="false" Class="quotes-pane" SizeChanged="@SizeChangedHandlerQuotes">
                     <TickGrid></TickGrid>
+                </SplitterPane>
+
+                <SplitterPane Size="1px" Collapsible="false" Class="empty-pane">
                 </SplitterPane>
             </SplitterPanes>
         </TelerikSplitter>
@@ -303,4 +308,56 @@
         StateHasChanged();
     }
 
+    #region Panels
+    public string PaneSizeClusters { get; set; } = "33%";
+    public string PaneSizeChart { get; set; } = "33%";
+    public string PaneSizeQuotes { get; set; } = "";
+
+    private double BaseChartSize = 33; // Reference size for scaling
+    private int BaseBubbleCount = Constants.DEFAULT_AMOUNT; // Base number of bubbles
+    private int MaxAmount = Constants.DEFAULT_AMOUNT; // Dynamically updated
+
+    /// <summary>
+    /// size changed event handler for clusters panel
+    /// </summary>
+    /// <param name="size">updated panel width</param>
+    private void SizeChangedHandlerClusters(string size)
+    {
+        PaneSizeClusters = size;
+    }
+
+    /// <summary>
+    /// size changed event handler for chart panel
+    /// </summary>
+    /// <param name="size">updated panel width</param>
+    private void SizeChangedHandlerChart(string size)
+    {
+        PaneSizeChart = size;
+
+        // Convert size to a numeric percentage (if size is given in %, remove the % symbol)
+        if (size.EndsWith("%"))
+        {
+            size = size.Replace("%", "");
+        }
+
+        if (double.TryParse(size, out double newSize))
+        {
+            // Calculate new maxamount dynamically
+            MaxAmount = Math.Max(1, (int)(BaseBubbleCount * newSize / BaseChartSize));
+            Console.WriteLine($"Chart pane size: {PaneSizeChart}  Max amount: {MaxAmount}");
+
+            // Refresh UI
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    /// <summary>
+    /// size changed event handler for quotes panel
+    /// </summary>
+    /// <param name="size">updated panel width</param>
+    private void SizeChangedHandlerQuotes(string size)
+    {
+        PaneSizeQuotes = size;
+    }
+    #endregion
 }

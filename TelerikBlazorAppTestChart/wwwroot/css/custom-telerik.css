@@ -12,16 +12,21 @@
         background: transparent;
     }
 
-.k-pane.left-pane {
+.k-pane.clusters-pane {
     margin-right: -3px !important;
 }
 
-.k-pane.right-pane {
-    margin-left: -3px !important;
-}
-
-.k-pane.center-pane {
+.k-pane.chart-pane {
     margin-left: -3px !important;
     margin-right: -3px !important;
+}
+
+.k-pane.quotes-pane {
+    margin-left: -3px !important;
+    margin-right: -3px !important;
+}
+
+.k-pane.empty-pane {
+    margin-left: -10px !important;
 }
 /* Splitter */

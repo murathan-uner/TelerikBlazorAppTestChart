@@ -1,5 +1,6 @@
 ﻿@using System.Timers
 @using Lock = System.Threading.Lock
+@using TelerikBlazorAppTestChart.Components.Common
 
 
 
@@ -13,16 +14,13 @@
                      Field="@nameof(TradeApi.Price)"
                      ColorField="@nameof(TradeApi.Color)"> *@
 
-        <ChartSeries Type="ChartSeriesType.Bubble"
+        @* <ChartSeries Type="ChartSeriesType.Bubble"
                      Data="@Ticks2"
                      YField="@nameof(TradeApi.Price)"
                      XField="@nameof(TradeApi.IndexForChart)"
                      SizeField="@nameof(TradeApi.Volume)"
                      ColorField="@nameof(TradeApi.Color)">
-
-
-        </ChartSeries>
-
+        </ChartSeries> *@
 
         <ChartSeries Type="ChartSeriesType.ScatterLine"
                      Data="@Ticks"
@@ -32,7 +30,6 @@
             <ChartSeriesMarkers Visible="false">
 
             </ChartSeriesMarkers>
-
 
             <ChartSeries Type="ChartSeriesType.Bubble"
                          Data="@Ticks"
@@ -47,8 +44,6 @@
 
         </ChartSeries>
 
-
-
         @*      YField="@nameof(TradeApi.Price)"
         XField="@nameof(TradeApi.IndexForChart)
         SizeField="@nameof(TradeApi.Volume)"> *@
@@ -61,7 +56,7 @@
     </ChartValueAxes> *@
 
     <ChartXAxes>
-        <ChartXAxis Max="@i" Min="@(i-maxamount)" Visible="false">
+        <ChartXAxis Max="@i" Min="@(i-MaxAmount)" Visible="false">
         </ChartXAxis>
     </ChartXAxes>
 
@@ -93,6 +88,8 @@
     //TODO: 1) странное масштабирование на старте
     //TODO: 2) бага с исчезнование -> лицензия телерика
 
+    [Parameter]
+    public int MaxAmount { get; set; } = Constants.DEFAULT_AMOUNT; // Default number of bubbles
 
     private Timer _timer;
 
@@ -214,17 +211,15 @@
         base.OnInitialized();
     }
 
-    int maxamount = 30;
-
     public void ChangeScale()
     {
-        maxamount = maxamount / 2;
+        MaxAmount = MaxAmount / 2;
         InvokeAsync(StateHasChanged);
     }
 
     public void ChangeScale2()
     {
-        maxamount = maxamount * 2;
+        MaxAmount = MaxAmount * 2;
         InvokeAsync(StateHasChanged);
     }
 
@@ -232,11 +227,10 @@
     {
         Ticks.Add(tick);
 
-
-        if (Ticks.Count > maxamount)
+        if (Ticks.Count > MaxAmount)
         {
-            Ticks.RemoveAt(1);
-
+            // Ticks.RemoveAt(1);
+            Ticks.RemoveRange(0, Ticks.Count - MaxAmount);
         }
 
         InvokeAsync(StateHasChanged); //.GetAwaiter().GetResult();
