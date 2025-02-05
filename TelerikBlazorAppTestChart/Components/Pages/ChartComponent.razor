@@ -157,7 +157,7 @@
         Ticks = new List<TradeApi>();
 
         Ticks2 = new();
-        //Ticks2.Add(new TradeApi(){IndexForChart = 0, Volume = 100,});
+        Ticks2.Add(new TradeApi(){IndexForChart = 0, Volume = 400,});
 
 
         _timer.Elapsed += (s, e) =>
@@ -188,7 +188,7 @@
                         SecurityId = "si-3.25",
                         Side = Side.Buy,
                         Time = DateTime.Now,
-                        Volume = new Random().Next(1, 2000)
+                        Volume = new Random().Next(1, 100)
                     };
 
                 if (r == 0)
