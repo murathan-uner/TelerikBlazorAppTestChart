@@ -53,7 +53,7 @@
     </ChartValueAxes> *@
 
     <ChartXAxes>
-        <ChartXAxis Max="@i" Min="@(i-MaxAmount)" Visible="false">
+        <ChartXAxis Max="@i" Min="@(i-MaxAmount)" Visible="false" MajorUnit="5">
         </ChartXAxis>
     </ChartXAxes>
 
@@ -63,15 +63,6 @@
     </ChartYAxes>
 
 </TelerikChart>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@TurnOnOff">ON/OFF</TelerikButton>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoUp">UP</TelerikButton>
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoDown">Down</TelerikButton>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale">CnahgeScale</TelerikButton>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale2">CnahgeScale2</TelerikButton>
 
 <script suppress-error="BL9992">
     function chartSeriesLabelTemplate(context) {
@@ -234,7 +225,7 @@
 
 
     int click1 = 0;
-    private void GoUp()
+    public void GoUp()
     {
         click1++;
 
@@ -257,7 +248,7 @@
 
     }
 
-    private void GoDown()
+    public void GoDown()
     {
         click1++;
 
@@ -285,7 +276,7 @@
     }
 
     bool ONOFF = true;
-    private void TurnOnOff(MouseEventArgs obj)
+    public void TurnOnOff()
     {
         ONOFF = !ONOFF;
 

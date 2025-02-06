@@ -1,0 +1,101 @@
+﻿@using Telerik.DataSource.Extensions
+@inject JsInteropService jsInteropService
+@inject IJSRuntime JSRuntime
+@using Toolbelt.Blazor.HotKeys2
+@inject HotKeys HotKeys 
+
+@* <TelerikTileLayout Columns="3" Resizable="true" OnResize="@OnResizeHandler" @ref="RootLayout">
+    <TileLayoutItems>
+        <TileLayoutItem HeaderText="Clusters Panel" Id="ClustersPane">
+            <Content>
+                Table1
+            </Content>
+        </TileLayoutItem>
+        <TileLayoutItem HeaderText="Chart Panel" Id="ChartPane">
+            <Content>
+                Table2
+            </Content>
+        </TileLayoutItem>
+        <TileLayoutItem HeaderText="Quotes Panel" Id="QuotesPane">
+            <Content>
+                Table3
+            </Content>
+        </TileLayoutItem>
+    </TileLayoutItems>
+</TelerikTileLayout> *@
+
+<TelerikSplitter Orientation="@SplitterOrientation.Horizontal" Class="splitter" OnResize="@OnResizerHandlerSplitter">
+    <SplitterPanes>
+        <SplitterPane Size="33%" Collapsible="false" Class="table-pane1" Min="30px" SizeChanged="@SizeChangedHandlerTable1">
+            Table1
+        </SplitterPane>
+        <SplitterPane Collapsible="false" Class="table-pane2" Min="30px" SizeChanged="@SizeChangedHandlerTable2">
+            Table2
+        </SplitterPane>
+        <SplitterPane Size="33%" Collapsible="false" Class="table-pane3" Min="30px" SizeChanged="@SizeChangedHandlerTable3">
+            Table3
+        </SplitterPane>
+    </SplitterPanes>
+</TelerikSplitter>
+
+@code {
+    private TelerikTileLayout RootLayout { get; set; }
+
+    public string PaneSize1 { get; set; } = "0";
+    public string PaneSize2 { get; set; } = "0";
+    public string PaneSize3 { get; set; } = "0";
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         await JSRuntime.InvokeVoidAsync("registerElementsSizeChangeCallback", 
+    //         [DotNetObjectReference.Create(this), new string[] { "splitter", "table-pane1", "table-pane2", "table-pane3" }]);
+    //     }
+    // }
+
+    private void OnResizerHandlerSplitter(SplitterResizeEventArgs args)
+    {
+        Console.WriteLine($"pane with index: {args.Index} was just resized to {args.Size}.");
+    }
+
+    private void SizeChangedHandlerTable1(string size)
+    {
+        PaneSize1 = size;
+        Console.WriteLine("Pane 1 size was changed. Current size: " + PaneSize1);
+    }
+
+    private void SizeChangedHandlerTable2(string size)
+    {
+        PaneSize2 = size;
+        Console.WriteLine("Pane 2 size was changed. Current size: " + PaneSize2);
+    }
+
+    private void SizeChangedHandlerTable3(string size)
+    {
+        PaneSize3 = size;
+        Console.WriteLine("Pane 3 size was changed. Current size: " + PaneSize3);
+    }
+
+    [JSInvokable]
+    public void OnElementResize(string className, double width, double height)
+    {
+        if (className == "splitter")
+        {
+            // TODO
+        }
+        else if (className == "table-pane1")
+        {
+            
+        }
+        else if (className == "table-pane2")
+        {
+
+        }
+        else if (className == "table-pane3")
+        {
+
+        }
+        Console.WriteLine($"class: {className} width: {width}");
+    }
+}

@@ -256,16 +256,17 @@
         <TelerikSplitter Orientation="@SplitterOrientation.Horizontal" Class="splitter">
             <SplitterPanes>
                 <SplitterPane Size="@PaneSizeClusters" Collapsible="false" Class="clusters-pane" SizeChanged="@SizeChangedHandlerClusters">
+                    <ClustersComponent></ClustersComponent>
                 </SplitterPane>
 
                 <SplitterPane Size="@PaneSizeChart" Collapsible="false" Class="chart-pane" SizeChanged="@SizeChangedHandlerChart">
-                    <TelerikCard Class="chart-wrapper" Height="@(ChartHeight + "px")">
-                        <TelerikCard Class="chart-wrapper1" Width="@(ChartWrapperWidth + "px")">
+                    <TelerikStackLayout Class="chart-wrapper" Height="@(ChartHeight + "px")">
+                        <TelerikStackLayout Class="chart-wrapper1" Width="@(ChartWrapperWidth + "px")">
                             <div>
                                 <ChartComponent @ref="ChartSeriesComponent"></ChartComponent>
                             </div>
-                        </TelerikCard>
-                    </TelerikCard>
+                        </TelerikStackLayout>
+                    </TelerikStackLayout>
                 </SplitterPane>
 
                 <SplitterPane Size="@PaneSizeQuotes" Collapsible="false" Class="quotes-pane" SizeChanged="@SizeChangedHandlerQuotes">
@@ -277,34 +278,15 @@
             </SplitterPanes>
         </TelerikSplitter>
     </GridLayoutColumns>
-
 </TelerikGridLayout>
 
-@* <TelerikTileLayout Columns="4" Resizable="true" OnResize="@ResizeContent">
-    <TileLayoutItems>
-        <TileLayoutItem HeaderText="Clusters Panel" Id="ClustersPane">
-            <Content>
-                Clusters Panel
-            </Content>
-        </TileLayoutItem>
-        <TileLayoutItem HeaderText="Chart Panel" Id="ChartPane">
-            <Content>
-                <ChartComponent @ref="ChartSeriesComponent">
-                </ChartComponent>
-            </Content>
-        </TileLayoutItem>
-        <TileLayoutItem HeaderText="Quotes Panel" Id="QuotesPane">
-            <Content>
-                <TickGrid></TickGrid>
-            </Content>
-        </TileLayoutItem>
-        <TileLayoutItem HeaderText="Empty Panel" Id="EmptyPane">
-            <Content>
-                Empty Panel
-            </Content>
-        </TileLayoutItem>
-    </TileLayoutItems>
-</TelerikTileLayout> *@
+<TelerikStackLayout Orientation="StackLayoutOrientation.Horizontal" Spacing="1rem" HorizontalAlign="StackLayoutHorizontalAlign.Left">
+    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@TurnOnOff">ON/OFF</TelerikButton>
+    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoUp">UP</TelerikButton>
+    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoDown">Down</TelerikButton>
+    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale">CnahgeScale</TelerikButton>
+    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale2">CnahgeScale2</TelerikButton>
+</TelerikStackLayout>
 
 @code{
 
@@ -401,8 +383,8 @@
 
             StateHasChanged();
 
-            // await JSRuntime.InvokeVoidAsync("registerElementSizeChangeCallback", ["chart-pane"]);
             // await JSRuntime.InvokeVoidAsync("window.registerViewportChangeCallback", DotNetObjectReference.Create(this));
+            // await JSRuntime.InvokeVoidAsync("registerElementSizeChangeCallback", [DotNetObjectReference.Create(this), "chart-pane"]);
         }
     }
     #endregion
@@ -417,4 +399,37 @@
     //     ViewportWidth = width;
     //     ViewportHeight = height;
     // }
+
+    [JSInvokable]
+    public void OnElementResize(string className, double width, double height)
+    {
+        if (className == "chart-pane")
+        {
+            // TODO
+        }
+        Console.WriteLine($"class: {className} width: {width}");
+    }
+
+    #region Chart adjustment
+    private void TurnOnOff()
+    {
+        ChartSeriesComponent.TurnOnOff();
+    }
+    private void GoUp()
+    {
+        ChartSeriesComponent.GoUp();
+    }
+    private void GoDown()
+    {
+        ChartSeriesComponent.GoDown();
+    }
+    private void ChangeScale()
+    {
+        ChartSeriesComponent.ChangeScale();
+    }
+    private void ChangeScale2()
+    {
+        ChartSeriesComponent.ChangeScale2();
+    }
+    #endregion
 }

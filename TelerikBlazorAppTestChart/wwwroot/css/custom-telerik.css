@@ -4,60 +4,26 @@
 }
 
 .k-splitbar {
-    z-index: 100;
-    background: transparent;
+    width: 4px;
+    background: linear-gradient(to right, transparent 0px, transparent 1px, darkgray 1px, darkgray 3px, transparent 3px, transparent 4px ) !important;
 }
 
-    .k-splitbar:hover {
-        background: transparent;
+    .k-splitbar:hover, .k-splitbar:focus, .k-splitbar.k-focus {
+        background: linear-gradient(to right, transparent 0px, transparent 1px, lightgray 1px, lightgray 3px, transparent 3px, transparent 4px ) !important;
     }
-
-.k-pane.clusters-pane {
-    margin-right: -3px !important;
-}
-
-.k-pane.chart-pane {
-    margin-left: -3px !important;
-    margin-right: -3px !important;
-}
-
-.k-pane.quotes-pane {
-    margin-left: -3px !important;
-    margin-right: -3px !important;
-}
-
-.k-pane.empty-pane {
-    margin-left: -10px !important;
-}
-
-/*.chart-pane {
-    overflow: hidden !important;
-    position: relative !important;
-}
-
-.chart-wrapper {
-    position: absolute !important;
-    right: 0 !important;
-    top: 0 !important;
-}*/
 
 .chart-pane {
     display: flex;
     flex-direction: column;
-/*    height: 100% !important;
-    min-height: 300px !important;*/
 }
 
 .chart-wrapper {
     overflow: hidden !important;
     position: relative !important;
-/*    height: 100% !important;
-    min-height: 300px !important;*/
 }
 
 .chart-wrapper1 {
     position: absolute !important;
     right: 0 !important;
     top: 0 !important;
-/*    height: 100% !important;*/
 }

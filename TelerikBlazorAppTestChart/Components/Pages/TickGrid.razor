@@ -10,18 +10,17 @@ OnRowRender="@RowRender"
 *@
 
 <TelerikGrid @ref="TicksGrid" 
-Id="@GridTableId"
-EnableLoaderContainer="true"
-             OnStateChanged="@OnStateChanged"
-RowHeight="15"
-Height="30vh"
-Data="@Ticks"
-
-TItem="@ChartComponent.TradeApi"
-ScrollMode="@GridScrollMode.Virtual"
-Pageable="false"
-Sortable="false"
-PageSize="150">
+    Id="@GridTableId"
+    EnableLoaderContainer="true"
+    OnStateChanged="@OnStateChanged"
+    RowHeight="15"
+    Height="80vh"
+    Data="@Ticks"
+    TItem="@ChartComponent.TradeApi"
+    ScrollMode="@GridScrollMode.Virtual"
+    Pageable="false"
+    Sortable="false"
+    PageSize="150">
     <GridColumns>
         <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Price)"  />
         <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />

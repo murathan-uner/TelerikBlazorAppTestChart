@@ -175,21 +175,49 @@ window.setElementMarginLeft = (className, marginLeft) => {
     el[0].style.marginLeft = marginLeft + "px";
 };
 
-//var _dotnetHelper = null;
-//window.registerViewportChangeCallback = (dotnetHelper) => {
-//    _dotnetHelper = dotnetHelper;
-//    window.addEventListener('resize', () => {
-//        dotnetHelper.invokeMethodAsync('OnResize', window.innerWidth, window.innerHeight);
-//    });
-//}
+window.registerViewportChangeCallback = (dotnetHelper) => {
+    let _dotnetHelper = dotnetHelper;
+    window.addEventListener('resize', () => {
+        _dotnetHelper.invokeMethodAsync('OnResize', window.innerWidth, window.innerHeight);
+    });
+}
 
-//window.registerElementSizeChangeCallback = (className) => {
-//    var el = document.getElementsByClassName(className);
-//    if (el && el.length > 0) {
-//        el[0].addEventListener('resize', () => {
-//            if (dotnetHelper != null) {
-//                dotnetHelper.invokeMethodAsync('OnResize', window.innerWidth, window.innerHeight);
-//            }
-//        });
-//    }
-//}
+window.registerElementSizeChangeCallback = (dotnetHelper, className) => {
+    let _dotnetHelper = dotnetHelper;
+    var elements = document.getElementsByClassName(className);
+    if (!elements || elements.length === 0) return;
+
+    var el = elements[0];
+
+    var resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            let width = entry.contentRect.width;
+            let height = entry.contentRect.height;
+            _dotnetHelper.invokeMethodAsync('OnElementResize', className, width, height);
+        }
+    });
+
+    resizeObserver.observe(el);
+}
+
+window.registerElementsSizeChangeCallback = (dotnetHelper, classNames) => {
+    let _dotnetHelper = dotnetHelper;
+    for (let clazz of classNames) {
+        var elements = document.getElementsByClassName(clazz);
+        if (elements && elements.length > 0) {
+
+            var el = elements[0];
+
+            var resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    let width = entry.contentRect.width;
+                    let height = entry.contentRect.height;
+                    _dotnetHelper.invokeMethodAsync('OnElementResize', clazz, width, height);
+                }
+            });
+
+            resizeObserver.observe(el);
+        }
+
+    }
+}
