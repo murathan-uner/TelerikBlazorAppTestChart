@@ -24,35 +24,95 @@
     </TileLayoutItems>
 </TelerikTileLayout> *@
 
-<TelerikSplitter Orientation="@SplitterOrientation.Horizontal" Class="splitter" OnResize="@OnResizerHandlerSplitter">
+<TelerikSplitter Orientation="@SplitterOrientation.Horizontal" Class="splitter" OnResize="@OnResizerHandlerSplitter" Height="80vh">
     <SplitterPanes>
         <SplitterPane Size="33%" Collapsible="false" Class="table-pane1" Min="30px" SizeChanged="@SizeChangedHandlerTable1">
-            Table1
+            <TelerikGrid @ref="Grid1"
+                         Id="@GridId1"
+                         EnableLoaderContainer="true"
+                         RowHeight="15"
+                         Height="100%"
+                         Data="@ClusterData1"
+                         TItem="@ChartComponent.TradeApi"
+                         ScrollMode="@GridScrollMode.Virtual"
+                         Pageable="false"
+                         Sortable="false"
+                         PageSize="150">
+                <GridColumns>
+                    <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+                </GridColumns>
+            </TelerikGrid>
         </SplitterPane>
         <SplitterPane Collapsible="false" Class="table-pane2" Min="30px" SizeChanged="@SizeChangedHandlerTable2">
-            Table2
+            <TelerikGrid @ref="Grid2"
+                         Id="@GridId2"
+                         EnableLoaderContainer="true"
+                         RowHeight="15"
+                         Height="100%"
+                         Data="@ClusterData2"
+                         TItem="@ChartComponent.TradeApi"
+                         ScrollMode="@GridScrollMode.Virtual"
+                         Pageable="false"
+                         Sortable="false"
+                         PageSize="150">
+                <GridColumns>
+                    <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+                </GridColumns>
+            </TelerikGrid>
         </SplitterPane>
         <SplitterPane Size="33%" Collapsible="false" Class="table-pane3" Min="30px" SizeChanged="@SizeChangedHandlerTable3">
-            Table3
+            <TelerikGrid @ref="Grid3"
+                         Id="@GridId3"
+                         EnableLoaderContainer="true"
+                         RowHeight="15"
+                         Height="100%"
+                         Data="@ClusterData3"
+                         TItem="@ChartComponent.TradeApi"
+                         ScrollMode="@GridScrollMode.Virtual"
+                         Pageable="false"
+                         Sortable="false"
+                         PageSize="150">
+                <GridColumns>
+                    <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+                </GridColumns>
+            </TelerikGrid>
         </SplitterPane>
     </SplitterPanes>
 </TelerikSplitter>
 
 @code {
-    private TelerikTileLayout RootLayout { get; set; }
+    public TelerikGrid<ChartComponent.TradeApi> Grid1 { get; set; }
+    public TelerikGrid<ChartComponent.TradeApi> Grid2 { get; set; }
+    public TelerikGrid<ChartComponent.TradeApi> Grid3 { get; set; }
+
+    private string GridId1 { get; set; } = Guid.NewGuid().ToString();
+    private string GridId2 { get; set; } = Guid.NewGuid().ToString();
+    private string GridId3 { get; set; } = Guid.NewGuid().ToString();
+
+    // [Parameter]
+    public List<ChartComponent.TradeApi> ClusterData1 { get; set; }
+    // [Parameter]
+    public List<ChartComponent.TradeApi> ClusterData2 { get; set; }
+    // [Parameter]
+    public List<ChartComponent.TradeApi> ClusterData3 { get; set; }
 
     public string PaneSize1 { get; set; } = "0";
     public string PaneSize2 { get; set; } = "0";
     public string PaneSize3 { get; set; } = "0";
 
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender)
-    //     {
-    //         await JSRuntime.InvokeVoidAsync("registerElementsSizeChangeCallback", 
-    //         [DotNetObjectReference.Create(this), new string[] { "splitter", "table-pane1", "table-pane2", "table-pane3" }]);
-    //     }
-    // }
+    protected override void OnInitialized()
+    {
+        BuildInitialCluster(3000);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("registerElementsSizeChangeCallback", 
+            [DotNetObjectReference.Create(this), new string[] { "splitter", "table-pane1", "table-pane2", "table-pane3" }]);
+        }
+    }
 
     private void OnResizerHandlerSplitter(SplitterResizeEventArgs args)
     {
@@ -86,7 +146,7 @@
         }
         else if (className == "table-pane1")
         {
-            
+
         }
         else if (className == "table-pane2")
         {
@@ -97,5 +157,29 @@
 
         }
         Console.WriteLine($"class: {className} width: {width}");
+    }
+
+    private int Scale = 1;
+    private void BuildInitialCluster(decimal bestbid)
+    {
+        try
+        {
+            ClusterData1 = new();
+            ClusterData2 = new();
+            ClusterData3 = new();
+
+            for (var i = 0; i < 100; i++)
+            {
+                ClusterData1.Add(new ChartComponent.TradeApi() { Price = i, Volume = new Random().Next(1, 2000) });
+                ClusterData2.Add(new ChartComponent.TradeApi() { Price = i, Volume = new Random().Next(1, 2000) });
+                ClusterData3.Add(new ChartComponent.TradeApi() { Price = i, Volume = new Random().Next(1, 2000) });
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
     }
 }

@@ -256,7 +256,10 @@
         <TelerikSplitter Orientation="@SplitterOrientation.Horizontal" Class="splitter">
             <SplitterPanes>
                 <SplitterPane Size="@PaneSizeClusters" Collapsible="false" Class="clusters-pane" SizeChanged="@SizeChangedHandlerClusters">
-                    <ClustersComponent></ClustersComponent>
+                    @* <ClustersComponent ClusterData1="@ClusterData1" ClusterData2="@ClusterData2" ClusterData3="@ClusterData3">
+                    </ClustersComponent> *@
+                    <ClustersComponent>
+                    </ClustersComponent>
                 </SplitterPane>
 
                 <SplitterPane Size="@PaneSizeChart" Collapsible="false" Class="chart-pane" SizeChanged="@SizeChangedHandlerChart">
@@ -270,7 +273,7 @@
                 </SplitterPane>
 
                 <SplitterPane Size="@PaneSizeQuotes" Collapsible="false" Class="quotes-pane" SizeChanged="@SizeChangedHandlerQuotes">
-                    <TickGrid></TickGrid>
+                    <TickGrid @ref="TickGridComponent"></TickGrid>
                 </SplitterPane>
 
                 <SplitterPane Size="1px" Collapsible="false" Class="empty-pane">
@@ -296,6 +299,14 @@
     int gridsize = 47;
 
     private ChartComponent ChartSeriesComponent { get; set; }
+    private TickGrid TickGridComponent { get; set;  }
+
+    #region Clusters
+    private List<ChartComponent.TradeApi> ClusterData1 { get; set; } = new ();
+    private List<ChartComponent.TradeApi> ClusterData2 { get; set; } = new ();
+    private List<ChartComponent.TradeApi> ClusterData3 { get; set; } = new ();
+    #endregion
+
     private string ChartOffset { get; set; } = "0px";
     private int ChartWrapperWidth { get; set; } = 0;
     private int ChartWidth { get; set; } = 0;

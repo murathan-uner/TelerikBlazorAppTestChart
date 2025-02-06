@@ -34,7 +34,7 @@ OnRowRender="@RowRender"
 
     private HotKeysContext? _hotKeysContext;
 
-    List<ChartComponent.TradeApi> Ticks { get; set; } = new();
+    public List<ChartComponent.TradeApi> Ticks { get; set; } = new();
     public TelerikGrid<ChartComponent.TradeApi> TicksGrid { get; set; }
 
     private void UpdateClastersGrid()
