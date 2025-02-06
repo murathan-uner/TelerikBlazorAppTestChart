@@ -29,4 +29,35 @@
 .k-pane.empty-pane {
     margin-left: -10px !important;
 }
-/* Splitter */
+
+/*.chart-pane {
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+.chart-wrapper {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+}*/
+
+.chart-pane {
+    display: flex;
+    flex-direction: column;
+/*    height: 100% !important;
+    min-height: 300px !important;*/
+}
+
+.chart-wrapper {
+    overflow: hidden !important;
+    position: relative !important;
+/*    height: 100% !important;
+    min-height: 300px !important;*/
+}
+
+.chart-wrapper1 {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+/*    height: 100% !important;*/
+}

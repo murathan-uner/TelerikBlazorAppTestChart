@@ -238,7 +238,6 @@
 
 </style>
 
-
 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@PlusSize">Plus</TelerikButton>
 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@MinusSize">Minus</TelerikButton>
 
@@ -254,14 +253,19 @@
     </GridLayoutRows> *@
 
     <GridLayoutColumns>
-        <TelerikSplitter Orientation="@SplitterOrientation.Horizontal">
+        <TelerikSplitter Orientation="@SplitterOrientation.Horizontal" Class="splitter">
             <SplitterPanes>
                 <SplitterPane Size="@PaneSizeClusters" Collapsible="false" Class="clusters-pane" SizeChanged="@SizeChangedHandlerClusters">
                 </SplitterPane>
 
                 <SplitterPane Size="@PaneSizeChart" Collapsible="false" Class="chart-pane" SizeChanged="@SizeChangedHandlerChart">
-                    <ChartComponent MaxAmount="@MaxAmount">
-                    </ChartComponent>
+                    <TelerikCard Class="chart-wrapper" Height="@(ChartHeight + "px")">
+                        <TelerikCard Class="chart-wrapper1" Width="@(ChartWrapperWidth + "px")">
+                            <div>
+                                <ChartComponent @ref="ChartSeriesComponent"></ChartComponent>
+                            </div>
+                        </TelerikCard>
+                    </TelerikCard>
                 </SplitterPane>
 
                 <SplitterPane Size="@PaneSizeQuotes" Collapsible="false" Class="quotes-pane" SizeChanged="@SizeChangedHandlerQuotes">
@@ -276,14 +280,44 @@
 
 </TelerikGridLayout>
 
-
-
-
+@* <TelerikTileLayout Columns="4" Resizable="true" OnResize="@ResizeContent">
+    <TileLayoutItems>
+        <TileLayoutItem HeaderText="Clusters Panel" Id="ClustersPane">
+            <Content>
+                Clusters Panel
+            </Content>
+        </TileLayoutItem>
+        <TileLayoutItem HeaderText="Chart Panel" Id="ChartPane">
+            <Content>
+                <ChartComponent @ref="ChartSeriesComponent">
+                </ChartComponent>
+            </Content>
+        </TileLayoutItem>
+        <TileLayoutItem HeaderText="Quotes Panel" Id="QuotesPane">
+            <Content>
+                <TickGrid></TickGrid>
+            </Content>
+        </TileLayoutItem>
+        <TileLayoutItem HeaderText="Empty Panel" Id="EmptyPane">
+            <Content>
+                Empty Panel
+            </Content>
+        </TileLayoutItem>
+    </TileLayoutItems>
+</TelerikTileLayout> *@
 
 @code{
 
+    @inject IJSRuntime JSRuntime;
+
     string gridsizestting => gridsize.ToString() + "%";
     int gridsize = 47;
+
+    private ChartComponent ChartSeriesComponent { get; set; }
+    private string ChartOffset { get; set; } = "0px";
+    private int ChartWrapperWidth { get; set; } = 0;
+    private int ChartWidth { get; set; } = 0;
+    private int ChartHeight { get; set; } = 0;
 
     public static System.Timers.Timer CreateTimerAndStart(Action method, int ms, bool repeat = true)
     {
@@ -313,10 +347,6 @@
     public string PaneSizeChart { get; set; } = "33%";
     public string PaneSizeQuotes { get; set; } = "";
 
-    private double BaseChartSize = 33; // Reference size for scaling
-    private int BaseBubbleCount = Constants.DEFAULT_AMOUNT; // Base number of bubbles
-    private int MaxAmount = Constants.DEFAULT_AMOUNT; // Dynamically updated
-
     /// <summary>
     /// size changed event handler for clusters panel
     /// </summary>
@@ -333,22 +363,7 @@
     private void SizeChangedHandlerChart(string size)
     {
         PaneSizeChart = size;
-
-        // Convert size to a numeric percentage (if size is given in %, remove the % symbol)
-        if (size.EndsWith("%"))
-        {
-            size = size.Replace("%", "");
-        }
-
-        if (double.TryParse(size, out double newSize))
-        {
-            // Calculate new maxamount dynamically
-            MaxAmount = Math.Max(1, (int)(BaseBubbleCount * newSize / BaseChartSize));
-            Console.WriteLine($"Chart pane size: {PaneSizeChart}  Max amount: {MaxAmount}");
-
-            // Refresh UI
-            InvokeAsync(StateHasChanged);
-        }
+        ChartSeriesComponent.OnChartSizeChanged(size);
     }
 
     /// <summary>
@@ -359,5 +374,47 @@
     {
         PaneSizeQuotes = size;
     }
+
+    private class ChartSize
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            // Get the actual pixel size of the chart-pane
+            var dimensionsParent = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["splitter"]);
+            var dimensionsChartPane = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["chart-pane"]);
+            var dimensionsChartWrapper1 = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["chart-wrapper1"]);
+            ChartWrapperWidth = dimensionsParent.Width;
+            ChartWidth = dimensionsChartPane.Width;
+            // ChartWidth = 1498;
+            ChartHeight = dimensionsChartWrapper1.Height;
+
+            // await JSRuntime.InvokeVoidAsync("setElementStyle", "chart-wrapper", 
+            // $"width:{ChartWrapperWidth}px; margin-left:{ChartWidth - ChartWrapperWidth}px;");
+            // await JSRuntime.InvokeVoidAsync("setElementStyle", "chart-wrapper1", $"width:{ChartWrapperWidth}px;");
+
+            StateHasChanged();
+
+            // await JSRuntime.InvokeVoidAsync("registerElementSizeChangeCallback", ["chart-pane"]);
+            // await JSRuntime.InvokeVoidAsync("window.registerViewportChangeCallback", DotNetObjectReference.Create(this));
+        }
+    }
     #endregion
+
+    // public int ViewportWidth { get; set; }
+    // public int ViewportHeight { get; set; }
+
+    // [JSInvokable]
+    // public void OnResize(int width, int height)
+    // {
+    //     if (ViewportWidth == width && ViewportHeight == height) return;
+    //     ViewportWidth = width;
+    //     ViewportHeight = height;
+    // }
 }

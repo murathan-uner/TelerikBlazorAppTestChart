@@ -142,3 +142,54 @@ function getWheelEvent(historyTableId) {
 //        }
 //    }
 //}
+
+//Chart Panel
+window.getElementSize = (className) => {
+    var el = document.getElementsByClassName(className);
+    if (!el || el.length == 0) return null;
+
+    return {
+        width: el[0].clientWidth,
+        height: el[0].clientHeight
+    };
+};
+
+window.setElementStyle = (className, style) => {
+    var el = document.getElementsByClassName(className);
+    if (!el || el.length == 0) return;
+
+    el[0].style = style;
+};
+
+window.setElementWidth = (className, width) => {
+    var el = document.getElementsByClassName(className);
+    if (!el || el.length == 0) return;
+
+    el[0].style.width = width + "px";
+};
+
+window.setElementMarginLeft = (className, marginLeft) => {
+    var el = document.getElementsByClassName(className);
+    if (!el || el.length == 0) return;
+
+    el[0].style.marginLeft = marginLeft + "px";
+};
+
+//var _dotnetHelper = null;
+//window.registerViewportChangeCallback = (dotnetHelper) => {
+//    _dotnetHelper = dotnetHelper;
+//    window.addEventListener('resize', () => {
+//        dotnetHelper.invokeMethodAsync('OnResize', window.innerWidth, window.innerHeight);
+//    });
+//}
+
+//window.registerElementSizeChangeCallback = (className) => {
+//    var el = document.getElementsByClassName(className);
+//    if (el && el.length > 0) {
+//        el[0].addEventListener('resize', () => {
+//            if (dotnetHelper != null) {
+//                dotnetHelper.invokeMethodAsync('OnResize', window.innerWidth, window.innerHeight);
+//            }
+//        });
+//    }
+//}
