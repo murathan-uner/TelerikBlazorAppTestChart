@@ -1,8 +1,8 @@
-﻿class Splitter {
+﻿class MainSplitter {
 
     constructor(containerId) {
         this.container = document.getElementById(containerId);
-        this.panes = Array.from(this.container.getElementsByClassName("split-pane"));
+        this.panes = Array.from(this.container.getElementsByClassName("main-split-pane"));
         this.gutters = [];
         this.containerBound = new DOMRect();
         this.minSizes = [40, 40, 40];

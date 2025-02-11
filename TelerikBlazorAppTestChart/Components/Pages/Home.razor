@@ -241,53 +241,24 @@
 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@PlusSize">Plus</TelerikButton>
 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@MinusSize">Minus</TelerikButton>
 
-<TelerikGridLayout>
-    @* <GridLayoutColumns>
-        <Telerik.Blazor.Components.GridLayoutColumn Width="20%" />
-        <Telerik.Blazor.Components.GridLayoutColumn Width="@gridsizestting" />
-        <Telerik.Blazor.Components.GridLayoutColumn Width="33%" />
-    </GridLayoutColumns>
-
-    <GridLayoutRows>
-        <Telerik.Blazor.Components.GridLayoutRow />
-    </GridLayoutRows> *@
-
-    <GridLayoutColumns>
-        <TelerikSplitter @ref="Splitter" Orientation="@SplitterOrientation.Horizontal" Class="splitter">
-            <SplitterPanes>
-                <SplitterPane @ref="ClustersPane" Size="@PaneSizeClustersString" Collapsible="false" Class="clusters-pane" SizeChanged="@SizeChangedHandlerClusters">
-                    <ClustersComponent>
-                    </ClustersComponent>
-                </SplitterPane>
-
-                <SplitterPane @ref="ChartPane" Size="@PaneSizeChartString" Collapsible="false" Class="chart-pane" SizeChanged="@SizeChangedHandlerChart">
-                    <TelerikStackLayout Class="chart-wrapper" Height="@(ChartHeight + "px")">
-                        <TelerikStackLayout Class="chart-wrapper1" Width="@(ChartWrapperWidth + "px")">
-                            <div>
-                                <ChartComponent @ref="ChartSeriesComponent"></ChartComponent>
-                            </div>
-                        </TelerikStackLayout>
-                    </TelerikStackLayout>
-                </SplitterPane>
-
-                <SplitterPane @ref="QuotesPane" Collapsible="false" Class="quotes-pane" SizeChanged="@SizeChangedHandlerQuotes">
-                    <TickGrid @ref="TickGridComponent"></TickGrid>
-                </SplitterPane>
-
-                <SplitterPane Size="1px" Collapsible="false" Class="empty-pane">
-                </SplitterPane>
-            </SplitterPanes>
-        </TelerikSplitter>
-    </GridLayoutColumns>
-</TelerikGridLayout>
-
-@* <TelerikStackLayout Orientation="StackLayoutOrientation.Horizontal" Spacing="1rem" HorizontalAlign="StackLayoutHorizontalAlign.Left">
-    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@TurnOnOff">ON/OFF</TelerikButton>
-    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoUp">UP</TelerikButton>
-    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoDown">Down</TelerikButton>
-    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale">CnahgeScale</TelerikButton>
-    <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale2">CnahgeScale2</TelerikButton>
-</TelerikStackLayout> *@
+<div id="main-splitter-container">
+    <div class="main-split-pane" id="clusters-pane">
+        <ClustersComponent @ref="ClustersComponent">
+        </ClustersComponent>
+    </div>
+    <div class="main-split-pane" id="chart-pane">
+        <TelerikStackLayout Class="chart-wrapper-wrapper" Height="@(ChartPaneHeight + "px")">
+            <TelerikStackLayout Class="chart-wrapper" Width="@(ChartPaneFullWidth + "px")">
+                <div>
+                    <ChartComponent @ref="ChartComponent"></ChartComponent>
+                </div>
+            </TelerikStackLayout>
+        </TelerikStackLayout>
+    </div>
+    <div class="main-split-pane" id="tick-pane">
+        <TickGrid @ref="TickGridComponent"></TickGrid>
+    </div>
+</div>
 
 @code{
 
@@ -296,90 +267,14 @@
     string gridsizestting => gridsize.ToString() + "%";
     int gridsize = 47;
 
-    private TelerikSplitter Splitter { get; set; }
-    private SplitterPane ClustersPane { get; set; }
-    private SplitterPane ChartPane { get; set; }
-    private SplitterPane QuotesPane { get; set; }
-
-    private ChartComponent ChartSeriesComponent { get; set; }
+    private ClustersComponent ClustersComponent { get; set; }
+    private ChartComponent ChartComponent { get; set; }
     private TickGrid TickGridComponent { get; set;  }
 
-    #region Clusters
-    private List<ChartComponent.TradeApi> ClusterData1 { get; set; } = new ();
-    private List<ChartComponent.TradeApi> ClusterData2 { get; set; } = new ();
-    private List<ChartComponent.TradeApi> ClusterData3 { get; set; } = new ();
-    #endregion
-
     private string ChartOffset { get; set; } = "0px";
-    private int ChartWrapperWidth { get; set; } = 0;
-    private int ChartWidth { get; set; } = 0;
-    private int ChartHeight { get; set; } = 0;
-
-    public static System.Timers.Timer CreateTimerAndStart(Action method, int ms, bool repeat = true)
-    {
-        var timer = new System.Timers.Timer(ms) { AutoReset = repeat };
-        timer.Elapsed += (s, e) =>
-        {
-            method?.Invoke();
-        };
-        timer.Start();
-        return timer;
-    }
-
-    private void PlusSize(MouseEventArgs obj)
-    {
-        gridsize += 2;
-        StateHasChanged();
-    }
-
-    private void MinusSize(MouseEventArgs obj)
-    {
-        gridsize -= 2;
-        StateHasChanged();
-    }
-
-    #region Panels
-    private string PaneSizeClustersString { get; set; } = "33%";
-    private string PaneSizeChartString { get; set; } = "33%";
-    private double PanelSizeClusters = 0;
-
-    /// <summary>
-    /// size changed event handler for clusters panel
-    /// </summary>
-    /// <param name="size">updated panel width</param>
-    private void SizeChangedHandlerClusters(string size)
-    {
-        if (PaneSizeClustersString != "0")
-        {
-            PaneSizeClustersString = size;
-        }
-    }
-
-    /// <summary>
-    /// size changed event handler for chart panel
-    /// </summary>
-    /// <param name="size">updated panel width</param>
-    private void SizeChangedHandlerChart(string size)
-    {
-        // PaneSizeChart = size;
-        // ChartSeriesComponent.OnChartSizeChanged(size);
-    }
-
-    /// <summary>
-    /// size changed event handler for quotes panel
-    /// </summary>
-    /// <param name="size">updated panel width</param>
-    private void SizeChangedHandlerQuotes(string size)
-    {
-        // PaneSizeQuotes = size;
-    }
-
-    private void OnClustersAllCollapsed()
-    {
-        PaneSizeClustersString = "0";
-        // PaneSizeChartString = $"{PanelSizeClusters + 30}px";
-        StateHasChanged();
-    }
+    private int ChartPaneFullWidth { get; set; } = 0;
+    private int ChartPaneWidth { get; set; } = 0;
+    private int ChartPaneHeight { get; set; } = 0;
 
     private class ChartSize
     {
@@ -393,63 +288,60 @@
         if (firstRender)
         {
             // Get the actual pixel size of the chart-pane
-            var dimensionsParent = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["splitter"]);
-            var dimensionsChartPane = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["chart-pane"]);
-            var dimensionsChartWrapper1 = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["chart-wrapper1"]);
-            ChartWrapperWidth = dimensionsParent.Width;
-            ChartWidth = dimensionsChartPane.Width;
-            ChartHeight = dimensionsChartWrapper1.Height;
-
-            PanelSizeClusters = ChartWrapperWidth;
-            // PaneSizeChartString = $"{ChartWrapperWidth}px";
-            // PaneSizeClustersString = PaneSizeChartString;
+            var dimensionsRoot = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeById", ["main-splitter-container"]);
+            var dimensionsChartPane = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeById", ["chart-pane"]);
+            var dimensionsChartWrapper = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["chart-wrapper"]);
+            ChartPaneFullWidth = dimensionsRoot.Width;
+            ChartPaneWidth = dimensionsChartPane.Width;
+            ChartPaneHeight = dimensionsChartWrapper.Height;
 
             StateHasChanged();
-
-            // await JSRuntime.InvokeVoidAsync("window.registerViewportChangeCallback", DotNetObjectReference.Create(this));
-            // await JSRuntime.InvokeVoidAsync("registerElementSizeChangeCallback", [DotNetObjectReference.Create(this), "chart-pane"]);
         }
     }
-    #endregion
 
-    // [JSInvokable]
-    // public void OnResize(int width, int height)
-    // {
-    //     if (ViewportWidth == width && ViewportHeight == height) return;
-    //     ViewportWidth = width;
-    //     ViewportHeight = height;
-    // }
-
-    [JSInvokable]
-    public void OnElementResize(string className, double width, double height)
+    public static System.Timers.Timer CreateTimerAndStart(Action method, int ms, bool repeat = true)
     {
-        if (className == "chart-pane")
+        var timer = new System.Timers.Timer(ms) { AutoReset = repeat };
+        timer.Elapsed += (s, e) =>
         {
-            // TODO
-        }
-        // Console.WriteLine($"class: {className} width: {width}");
+            method?.Invoke();
+        };
+        timer.Start();
+        return timer;
     }
 
     #region Chart adjustment
+    private void PlusSize(MouseEventArgs obj)
+    {
+        gridsize += 2;
+        StateHasChanged();
+    }
+
+    private void MinusSize(MouseEventArgs obj)
+    {
+        gridsize -= 2;
+        StateHasChanged();
+    }
+
     private void TurnOnOff()
     {
-        ChartSeriesComponent.TurnOnOff();
+        ChartComponent.TurnOnOff();
     }
     private void GoUp()
     {
-        ChartSeriesComponent.GoUp();
+        ChartComponent.GoUp();
     }
     private void GoDown()
     {
-        ChartSeriesComponent.GoDown();
+        ChartComponent.GoDown();
     }
     private void ChangeScale()
     {
-        ChartSeriesComponent.ChangeScale();
+        ChartComponent.ChangeScale();
     }
     private void ChangeScale2()
     {
-        ChartSeriesComponent.ChangeScale2();
+        ChartComponent.ChangeScale2();
     }
     #endregion
 }
