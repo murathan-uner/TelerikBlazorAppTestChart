@@ -1,0 +1,254 @@
+﻿@using Telerik.DataSource.Extensions
+@inject JsInteropService jsInteropService
+@inject IJSRuntime JSRuntime
+@using TelerikBlazorAppTestChart.Components.Common
+@using Toolbelt.Blazor.HotKeys2
+@inject HotKeys HotKeys 
+
+<TelerikSplitter @ref="Splitter" Orientation="@SplitterOrientation.Horizontal" Class="clusters-splitter" OnResize="@OnResizerHandlerSplitter" Height="80vh" Width="@SplitterSize">
+    <SplitterPanes>
+        <SplitterPane @ref="ClusterPane1" Collapsible="false" Class="table-pane1" Min="@(Constants.CLUSTER_MIN_WIDTH_1 + "px")" SizeChanged="@SizeChangedHandlerTable1">
+            <TelerikGrid @ref="Grid1"
+                         Id="@GridId1"
+                         EnableLoaderContainer="true"
+                         RowHeight="15"
+                         Height="100%"
+                         Data="@ClusterData1"
+                         TItem="@ChartComponent.TradeApi"
+                         ScrollMode="@GridScrollMode.Virtual"
+                         Pageable="false"
+                         Sortable="false"
+                         PageSize="150">
+                <GridColumns>
+                    <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+                </GridColumns>
+            </TelerikGrid>
+        </SplitterPane>
+        <SplitterPane @ref="ClusterPane2" Size="@PaneSize2" Collapsible="false" Class="table-pane2" Min="@(Constants.CLUSTER_MIN_WIDTH_2 + "px")" SizeChanged="@SizeChangedHandlerTable2">
+            <TelerikGrid @ref="Grid2"
+                         Id="@GridId2"
+                         EnableLoaderContainer="true"
+                         RowHeight="15"
+                         Height="100%"
+                         Data="@ClusterData2"
+                         TItem="@ChartComponent.TradeApi"
+                         ScrollMode="@GridScrollMode.Virtual"
+                         Pageable="false"
+                         Sortable="false"
+                         PageSize="150">
+                <GridColumns>
+                    <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+                </GridColumns>
+            </TelerikGrid>
+        </SplitterPane>
+        <SplitterPane @ref="ClusterPane3" Size="@PaneSize3" Collapsible="false" Class="table-pane3" Min="@(Constants.CLUSTER_MIN_WIDTH_3 + "px")" SizeChanged="@SizeChangedHandlerTable3">
+            <TelerikGrid @ref="Grid3"
+                         Id="@GridId3"
+                         EnableLoaderContainer="true"
+                         RowHeight="15"
+                         Height="100%"
+                         Data="@ClusterData3"
+                         TItem="@ChartComponent.TradeApi"
+                         ScrollMode="@GridScrollMode.Virtual"
+                         Pageable="false"
+                         Sortable="false"
+                         PageSize="150">
+                <GridColumns>
+                    <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+                </GridColumns>
+            </TelerikGrid>
+        </SplitterPane>
+    </SplitterPanes>
+</TelerikSplitter>
+
+@code {
+
+    [Parameter]
+    public EventCallback OnAllCollapsed { get; set; }
+
+    private TelerikSplitter Splitter { get; set; }
+    private SplitterPane ClusterPane1 { get; set; }
+    private SplitterPane ClusterPane2 { get; set; }
+    private SplitterPane ClusterPane3 { get; set; }
+
+    public TelerikGrid<ChartComponent.TradeApi> Grid1 { get; set; }
+    public TelerikGrid<ChartComponent.TradeApi> Grid2 { get; set; }
+    public TelerikGrid<ChartComponent.TradeApi> Grid3 { get; set; }
+
+    private string GridId1 { get; set; } = Guid.NewGuid().ToString();
+    private string GridId2 { get; set; } = Guid.NewGuid().ToString();
+    private string GridId3 { get; set; } = Guid.NewGuid().ToString();
+
+    // [Parameter]
+    public List<ChartComponent.TradeApi> ClusterData1 { get; set; }
+    // [Parameter]
+    public List<ChartComponent.TradeApi> ClusterData2 { get; set; }
+    // [Parameter]
+    public List<ChartComponent.TradeApi> ClusterData3 { get; set; }
+
+    private bool IsPane1Collapsed = false;
+    private bool IsPane2Collapsed = false;
+    private bool IsPane3Collapsed = false;
+    private double SizeRatio23 = 0.0;
+
+    public string SplitterSize { get; set; } = "100%";
+    public string PaneSize1 { get; set; } = "33%";
+    public string PaneSize2 { get; set; } = "10%";
+    public string PaneSize3 { get; set; } = "10%";
+
+    protected override void OnInitialized()
+    {
+        BuildInitialCluster(3000);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // await JSRuntime.InvokeVoidAsync("registerElementsSizeChangeCallback", 
+            // [DotNetObjectReference.Create(this), new string[] { "clusters-splitter", "table-pane1", "table-pane2", "table-pane3" }]);
+            await JSRuntime.InvokeVoidAsync("registerSplitterSizeChangeCallback",
+            [DotNetObjectReference.Create(this), "clusters-splitter", new string[] { "table-pane1", "table-pane2", "table-pane3" }]);
+        }
+    }
+
+    private void OnResizerHandlerSplitter(SplitterResizeEventArgs args)
+    {
+        Console.WriteLine($"pane with index: {args.Index} was just resized to {args.Size}.");
+    }
+
+    private void SizeChangedHandlerTable1(string size)
+    {
+        // PaneSize1 = size;
+        Console.WriteLine("Pane 1 size was changed. Current size: " + PaneSize1);
+    }
+
+    private void SizeChangedHandlerTable2(string size)
+    {
+        // PaneSize2 = size;
+        Console.WriteLine("Pane 2 size was changed. Current size: " + PaneSize2);
+    }
+
+    private void SizeChangedHandlerTable3(string size)
+    {
+        PaneSize3 = size;
+        Console.WriteLine("Pane 3 size was changed. Current size: " + PaneSize3);
+    }
+
+    [JSInvokable]
+    public void OnElementResize(string className, double width, double height)
+    {
+        Console.WriteLine($"{className} {width} {height}");
+    }
+
+    [JSInvokable]
+    public void OnSplitterResize(double width, double height, List<PanelBounds> panelBounds)
+    {
+        // Console.WriteLine($"{width} {height}");
+        var state = Splitter.GetState();
+
+        double minWidth1 = Constants.CLUSTER_MIN_WIDTH_1;
+        double minWidth2 = Constants.CLUSTER_MIN_WIDTH_2;
+        double minWidth3 = Constants.CLUSTER_MIN_WIDTH_3;
+
+        if (!IsPane1Collapsed)
+        {
+            if (panelBounds[0].Width <= minWidth1)
+            {
+                // PaneSize1 = "0";
+                PaneSize2 = $"{panelBounds[1].Width + minWidth1}px";
+                IsPane1Collapsed = true;
+                SizeRatio23 = panelBounds[1].Width / panelBounds[2].Width;
+                Console.WriteLine($"A {width} {panelBounds[1].Width} {panelBounds[2].Width}");
+            }
+        }
+        else if (IsPane1Collapsed && !IsPane2Collapsed)
+        {
+            if (panelBounds[1].Width <= minWidth2)
+            {
+                PaneSize2 = "0";
+                // PaneSize3 = $"{panelBounds[2].Width + minWidth2}px";
+                PaneSize3 = $"{width}px";
+                IsPane2Collapsed = true;
+                Console.WriteLine($"B {width} {panelBounds[1].Width} {panelBounds[2].Width}");
+            }
+        }
+        else if (IsPane1Collapsed && IsPane2Collapsed && !IsPane3Collapsed)
+        {
+            if (panelBounds[2].Width <= minWidth3)
+            {
+                PaneSize3 = "0";
+                SplitterSize = "0";
+                IsPane3Collapsed = true;
+                OnAllCollapsed.InvokeAsync();
+                Console.WriteLine($"C {width} {panelBounds[1].Width} {panelBounds[2].Width}");
+            }
+        }
+
+        if (!IsPane1Collapsed)
+        {
+            if (panelBounds[2].Width <= minWidth3)
+            {
+                PaneSize3 = $"{minWidth3}px";
+                Console.WriteLine($"D {width} {panelBounds[1].Width} {panelBounds[2].Width}");
+            }
+
+            if (panelBounds[1].Width <= minWidth2)
+            {
+                PaneSize2 = $"{minWidth2}px";
+                Console.WriteLine($"E {width} {panelBounds[1].Width} {panelBounds[2].Width}");
+            }
+        }
+        else
+        {
+            if (!IsPane2Collapsed)
+            {
+                if (panelBounds[2].Width <= minWidth3)
+                {
+                    PaneSize3 = $"{minWidth3}px";
+                    PaneSize2 = $"{width - minWidth3}px";
+                    Console.WriteLine($"F {width} {panelBounds[1].Width} {panelBounds[2].Width}");
+                }
+                else
+                {
+                    double size2 = width * SizeRatio23 / (1 + SizeRatio23);
+                    double size3 = width - size2;
+                    PaneSize2 = $"{size2}px";
+                    PaneSize3 = $"{size3}px";
+                    Console.WriteLine($"G");
+                }
+            }
+            else
+            {
+                
+            }
+        }
+
+        // Splitter.SetState(state);
+        StateHasChanged();
+    }
+
+    private int Scale = 1;
+    private void BuildInitialCluster(decimal bestbid)
+    {
+        try
+        {
+            ClusterData1 = new();
+            ClusterData2 = new();
+            ClusterData3 = new();
+
+            for (var i = 0; i < 100; i++)
+            {
+                ClusterData1.Add(new ChartComponent.TradeApi() { Price = i, Volume = new Random().Next(1, 2000) });
+                ClusterData2.Add(new ChartComponent.TradeApi() { Price = i, Volume = new Random().Next(1, 2000) });
+                ClusterData3.Add(new ChartComponent.TradeApi() { Price = i, Volume = new Random().Next(1, 2000) });
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+}

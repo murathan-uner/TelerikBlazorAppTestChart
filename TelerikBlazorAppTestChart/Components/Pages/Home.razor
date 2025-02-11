@@ -253,16 +253,14 @@
     </GridLayoutRows> *@
 
     <GridLayoutColumns>
-        <TelerikSplitter Orientation="@SplitterOrientation.Horizontal" Class="splitter">
+        <TelerikSplitter @ref="Splitter" Orientation="@SplitterOrientation.Horizontal" Class="splitter">
             <SplitterPanes>
-                <SplitterPane Size="@PaneSizeClusters" Collapsible="false" Class="clusters-pane" SizeChanged="@SizeChangedHandlerClusters">
-                    @* <ClustersComponent ClusterData1="@ClusterData1" ClusterData2="@ClusterData2" ClusterData3="@ClusterData3">
-                    </ClustersComponent> *@
+                <SplitterPane @ref="ClustersPane" Size="@PaneSizeClustersString" Collapsible="false" Class="clusters-pane" SizeChanged="@SizeChangedHandlerClusters">
                     <ClustersComponent>
                     </ClustersComponent>
                 </SplitterPane>
 
-                <SplitterPane Size="@PaneSizeChart" Collapsible="false" Class="chart-pane" SizeChanged="@SizeChangedHandlerChart">
+                <SplitterPane @ref="ChartPane" Size="@PaneSizeChartString" Collapsible="false" Class="chart-pane" SizeChanged="@SizeChangedHandlerChart">
                     <TelerikStackLayout Class="chart-wrapper" Height="@(ChartHeight + "px")">
                         <TelerikStackLayout Class="chart-wrapper1" Width="@(ChartWrapperWidth + "px")">
                             <div>
@@ -272,7 +270,7 @@
                     </TelerikStackLayout>
                 </SplitterPane>
 
-                <SplitterPane Size="@PaneSizeQuotes" Collapsible="false" Class="quotes-pane" SizeChanged="@SizeChangedHandlerQuotes">
+                <SplitterPane @ref="QuotesPane" Collapsible="false" Class="quotes-pane" SizeChanged="@SizeChangedHandlerQuotes">
                     <TickGrid @ref="TickGridComponent"></TickGrid>
                 </SplitterPane>
 
@@ -283,13 +281,13 @@
     </GridLayoutColumns>
 </TelerikGridLayout>
 
-<TelerikStackLayout Orientation="StackLayoutOrientation.Horizontal" Spacing="1rem" HorizontalAlign="StackLayoutHorizontalAlign.Left">
+@* <TelerikStackLayout Orientation="StackLayoutOrientation.Horizontal" Spacing="1rem" HorizontalAlign="StackLayoutHorizontalAlign.Left">
     <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@TurnOnOff">ON/OFF</TelerikButton>
     <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoUp">UP</TelerikButton>
     <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@GoDown">Down</TelerikButton>
     <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale">CnahgeScale</TelerikButton>
     <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale2">CnahgeScale2</TelerikButton>
-</TelerikStackLayout>
+</TelerikStackLayout> *@
 
 @code{
 
@@ -297,6 +295,11 @@
 
     string gridsizestting => gridsize.ToString() + "%";
     int gridsize = 47;
+
+    private TelerikSplitter Splitter { get; set; }
+    private SplitterPane ClustersPane { get; set; }
+    private SplitterPane ChartPane { get; set; }
+    private SplitterPane QuotesPane { get; set; }
 
     private ChartComponent ChartSeriesComponent { get; set; }
     private TickGrid TickGridComponent { get; set;  }
@@ -336,9 +339,9 @@
     }
 
     #region Panels
-    public string PaneSizeClusters { get; set; } = "33%";
-    public string PaneSizeChart { get; set; } = "33%";
-    public string PaneSizeQuotes { get; set; } = "";
+    private string PaneSizeClustersString { get; set; } = "33%";
+    private string PaneSizeChartString { get; set; } = "33%";
+    private double PanelSizeClusters = 0;
 
     /// <summary>
     /// size changed event handler for clusters panel
@@ -346,7 +349,10 @@
     /// <param name="size">updated panel width</param>
     private void SizeChangedHandlerClusters(string size)
     {
-        PaneSizeClusters = size;
+        if (PaneSizeClustersString != "0")
+        {
+            PaneSizeClustersString = size;
+        }
     }
 
     /// <summary>
@@ -355,8 +361,8 @@
     /// <param name="size">updated panel width</param>
     private void SizeChangedHandlerChart(string size)
     {
-        PaneSizeChart = size;
-        ChartSeriesComponent.OnChartSizeChanged(size);
+        // PaneSizeChart = size;
+        // ChartSeriesComponent.OnChartSizeChanged(size);
     }
 
     /// <summary>
@@ -365,7 +371,14 @@
     /// <param name="size">updated panel width</param>
     private void SizeChangedHandlerQuotes(string size)
     {
-        PaneSizeQuotes = size;
+        // PaneSizeQuotes = size;
+    }
+
+    private void OnClustersAllCollapsed()
+    {
+        PaneSizeClustersString = "0";
+        // PaneSizeChartString = $"{PanelSizeClusters + 30}px";
+        StateHasChanged();
     }
 
     private class ChartSize
@@ -385,12 +398,11 @@
             var dimensionsChartWrapper1 = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["chart-wrapper1"]);
             ChartWrapperWidth = dimensionsParent.Width;
             ChartWidth = dimensionsChartPane.Width;
-            // ChartWidth = 1498;
             ChartHeight = dimensionsChartWrapper1.Height;
 
-            // await JSRuntime.InvokeVoidAsync("setElementStyle", "chart-wrapper", 
-            // $"width:{ChartWrapperWidth}px; margin-left:{ChartWidth - ChartWrapperWidth}px;");
-            // await JSRuntime.InvokeVoidAsync("setElementStyle", "chart-wrapper1", $"width:{ChartWrapperWidth}px;");
+            PanelSizeClusters = ChartWrapperWidth;
+            // PaneSizeChartString = $"{ChartWrapperWidth}px";
+            // PaneSizeClustersString = PaneSizeChartString;
 
             StateHasChanged();
 
@@ -399,9 +411,6 @@
         }
     }
     #endregion
-
-    // public int ViewportWidth { get; set; }
-    // public int ViewportHeight { get; set; }
 
     // [JSInvokable]
     // public void OnResize(int width, int height)
@@ -418,7 +427,7 @@
         {
             // TODO
         }
-        Console.WriteLine($"class: {className} width: {width}");
+        // Console.WriteLine($"class: {className} width: {width}");
     }
 
     #region Chart adjustment

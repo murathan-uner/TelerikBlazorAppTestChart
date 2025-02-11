@@ -1,4 +1,66 @@
-﻿window.focusElementById = (windowId) => {
+﻿$(document).ready(function () {
+});
+
+window.initClusters = () => {
+    //let splitter = initSplitter();
+    new Splitter("splitter-container");
+};
+
+function initSplitter() {
+    var el = document.getElementsByClassName("split");
+    if (!el || el.length == 0) return;
+
+    const gutterSize = 4;
+    const clusterCount = 3;
+    var container = el[0];
+    var minSizes = [40, 40, 40];
+    let panes = [document.getElementById('split-0'), document.getElementById('split-1'), document.getElementById('split-2')];
+
+    let splitter = Split(['#split-0', '#split-1', '#split-2'], {
+        minSize: minSizes,
+        gutterSize: gutterSize,
+        snapOffset: 0,
+        onDrag: function () {
+            let sizes = splitter.getSizes();
+            //console.log("Adjusted Sizes:", JSON.stringify(sizes));
+
+            // Calculate pixel sizes
+            let totalSize = container.clientWidth - gutterSize * (clusterCount - 1);
+            let actualSizes = sizes.map((size, index) => {
+                let pane = panes[index];
+                let actualSize = (totalSize * size) / 100;
+                return actualSize;
+            });
+
+            if (actualSizes[0] <= minSizes[0] + 2) {
+                actualSizes[1] = actualSizes[1] + actualSizes[0];
+                actualSizes[0] = 0; // Hide pane1
+            } else {
+                //if (actualSizes[1] <= minSizes[1] + 4) {
+                //    actualSizes[1] = minSizes[1] + 4;
+                //}
+            }
+
+            if (actualSizes[0] == 0 && actualSizes[1] <= minSizes[1] + 4) {
+                actualSizes[2] = actualSizes[2] + actualSizes[1];
+                actualSizes[1] = 0; // Hide pane2
+            } else {
+            }
+
+            // Convert pixel sizes back to percentages and update Split.js
+            let newPercentages = actualSizes.map(size => (size / totalSize) * 100);
+            splitter.setSizes(newPercentages);
+
+        },
+        onDragStart: function (sizes) {
+        },
+        onDragEnd: function (sizes) {
+        },
+    });
+    return splitter;
+}
+
+window.focusElementById = (windowId) => {
     const element = document.getElementById(windowId);
     if (element) {
         console.log(element);
@@ -220,4 +282,47 @@ window.registerElementsSizeChangeCallback = (dotnetHelper, classNames) => {
         }
 
     }
+}
+
+window.registerSplitterSizeChangeCallback = (dotnetHelper, splitterClassName, panelClassNames) => {
+    let _dotnetHelper = dotnetHelper;
+    var elements = document.getElementsByClassName(splitterClassName);
+    if (!elements || elements.length === 0) return;
+    if (!panelClassNames || panelClassNames.length === 0) return;
+
+    var el = elements[0];
+
+    let panels = [];
+    for (let clazz of panelClassNames) {
+        var elems = document.getElementsByClassName(clazz);
+        if (elems && elems.length > 0) {
+            panels.push(elems[0]);
+        }
+    }
+
+    var resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            let width = entry.contentRect.width;
+            let height = entry.contentRect.height;
+
+            let updatedBounds = [];
+            for (let panel of panels) {
+                var bound = panel.getBoundingClientRect();
+                updatedBounds.push({
+                    left: bound.left,
+                    top: bound.top,
+                    right: bound.right,
+                    bottom: bound.bottom,
+                    width: bound.width,
+                    height: bound.height,
+                    x: bound.x,
+                    y: bound.y
+                });
+            }
+
+            _dotnetHelper.invokeMethodAsync('OnSplitterResize', width, height, updatedBounds);
+        }
+    });
+
+    resizeObserver.observe(el);
 }
