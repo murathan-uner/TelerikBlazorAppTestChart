@@ -64,6 +64,7 @@
 
         if (this.currentGutterIndex == 0) {
             if (newWidth1 <= this.minSizes[0]) {
+                // collapse pane1
                 this.panes[0].style.width = "1px";
                 this.panes[1].style.width = (this.containerBound.width - this.panes[2].offsetWidth - 1) + "px";
                 this.positionGutter(0);
@@ -72,6 +73,7 @@
         } else {
             if (this.currentGutterIndex == 1) {
                 if (this.panes[0].offsetWidth == 1 && newWidth1 <= this.minSizes[1]) {
+                    // collapse pane2
                     this.panes[1].style.width = "1px";
                     this.panes[2].style.width = (this.containerBound.width - 1) + "px";
                     this.positionGutter(1);
@@ -98,20 +100,83 @@
 
     stopDragging() {
         this.dragging = false;
+
+        this.recalculateOriginalRatio();
     }
 
     resizeHandler() {
         this.containerBound = this.container.getBoundingClientRect();
         let totalWidth = this.containerBound.width;
 
+        let newSizes = [];
         // Adjust pane widths based on original ratios
         this.panes.forEach((pane, i) => {
             let newWidth = totalWidth * this.originalRatios[i];
-            pane.style.width = Math.max(newWidth, this.minSizes[i]) + "px";
+            newSizes[i] = newWidth;
+        });
+        if (newSizes[0] < 1) {
+            // pane1 is collapsed
+            newSizes[0] = 1;
+            newSizes[2] = totalWidth - newSizes[1] - 1;
+        }
+        if (newSizes[1] < 1) {
+            // pane2 is collapsed
+            newSizes[1] = 1;
+            newSizes[2] = totalWidth - 1;
+        }
+        //console.log("0: " + newSizes[0] + " 1: " + newSizes[1] + "2: " + newSizes[2]);
+
+        // Keep bigger than minimum size
+        if (newSizes[2] < this.minSizes[2]) {
+            newSizes[2] = this.minSizes[2];
+        }
+
+        if (newSizes[1] < this.minSizes[1]) {
+            newSizes[1] = this.minSizes[1];
+        }
+
+        var isCollapsable = false;
+        // Check collapsable
+        //console.log("newSize0: " + newSizes[0]);
+        if (newSizes[0] == 1) {
+
+            let newSize1 = totalWidth - newSizes[2];
+            //console.log("newSize1: " + newSize1);
+            if (newSize1 < this.minSizes[1]) {
+                // collapse pane2
+                newSizes[1] = 1;
+                newSizes[2] = totalWidth - 1;
+                isCollapsable = true;
+                //console.log("newSize2: " + newSizes[2]);
+            } else {
+                newSizes[1] = newSize1;
+                //console.log("newSize1--: " + newSize1);
+            }
+
+        } else {
+
+            let newSize0 = totalWidth - newSizes[1] - newSizes[2];
+            if (newSize0 < this.minSizes[0]) {
+                // collapse pane1
+                newSizes[0] = 1;
+                newSizes[1] = totalWidth - newSizes[2] - 1;
+                isCollapsable = true;
+            } else {
+                newSizes[0] = newSize0;
+            }
+        }
+
+
+        this.panes.forEach((pane, i) => {
+            pane.style.width = newSizes[i] + "px";
         });
 
         // Reposition gutters
         this.gutters.forEach((_, i) => this.positionGutter(i));
+
+        if (isCollapsable) {
+            this.recalculateOriginalRatio();
+        }
     }
 
     observeContainerResize() {
@@ -120,6 +185,13 @@
         });
 
         resizeObserver.observe(this.container);
+    }
+
+    recalculateOriginalRatio() {
+        // recalculate the ratio
+        for (let i = 0; i < this.panes.length; i++) {
+            this.originalRatios[i] = this.panes[i].offsetWidth / this.containerBound.width;
+        }
     }
 }
 

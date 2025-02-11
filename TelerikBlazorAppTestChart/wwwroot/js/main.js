@@ -162,7 +162,7 @@ window.getElementSizeById = (id) => {
     };
 };
 
-window.getElementSize = (className) => {
+window.getElementSizeByClass = (className) => {
     var el = document.getElementsByClassName(className);
     if (!el || el.length == 0) return null;
 

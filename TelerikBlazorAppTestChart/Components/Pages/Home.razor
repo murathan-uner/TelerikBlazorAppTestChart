@@ -290,7 +290,7 @@
             // Get the actual pixel size of the chart-pane
             var dimensionsRoot = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeById", ["main-splitter-container"]);
             var dimensionsChartPane = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeById", ["chart-pane"]);
-            var dimensionsChartWrapper = await JSRuntime.InvokeAsync<ChartSize>("getElementSize", ["chart-wrapper"]);
+            var dimensionsChartWrapper = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeByClass", ["chart-wrapper"]);
             ChartPaneFullWidth = dimensionsRoot.Width;
             ChartPaneWidth = dimensionsChartPane.Width;
             ChartPaneHeight = dimensionsChartWrapper.Height;
