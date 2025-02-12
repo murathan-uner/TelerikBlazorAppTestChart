@@ -39,3 +39,24 @@
     z-index: 10; /* Ensure it's above panes */
     transform: translateX(-50%); /* Center gutter between panes */
 }
+
+/* Golden layout */
+.lm_splitter.lm_horizontal {
+    width: 3px !important;
+}
+
+    .lm_splitter.lm_horizontal .lm_drag_handle {
+        width: 8px !important;
+    }
+
+.lm_splitter.lm_vertical {
+    height: 3px !important;
+}
+
+    .lm_splitter.lm_vertical .lm_drag_handle {
+        height: 8px !important;
+    }
+
+.lm_content {
+/*    padding-left: 4px !important;*/
+}

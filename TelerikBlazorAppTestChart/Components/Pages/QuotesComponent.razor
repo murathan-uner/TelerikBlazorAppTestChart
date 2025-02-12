@@ -226,7 +226,7 @@ OnRowRender="@RowRender"
         //InvokeAsync(StateHasChanged);
         UpdateClastersGrid();
 
-        Home.CreateTimerAndStart(() => 
+        WindowsComponent.CreateTimerAndStart(() => 
         {
 
             if (!scrolled)
@@ -248,14 +248,11 @@ OnRowRender="@RowRender"
 
     private void OnScroll(string arg1, string arg2, string arg3, int arg4)
     {
-
     }
 
     private void Scroll()
     {
         ScrollTo(2000, TicksGrid);
-
-
     }
 
     bool scrolllog = true;

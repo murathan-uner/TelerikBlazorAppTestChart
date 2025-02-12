@@ -10,10 +10,5 @@
 		<PackageReference Include="Telerik.UI.for.Blazor" Version="7.1.0" />
 		<PackageReference Include="Toolbelt.Blazor.HotKeys2" Version="6.0.0" />
 	</ItemGroup>
-	<ItemGroup>
-	  <Content Update="Components\Pages\WindowComponent.razor">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	  </Content>
-	</ItemGroup>
 
 </Project>

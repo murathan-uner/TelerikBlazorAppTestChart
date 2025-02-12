@@ -1,5 +1,4 @@
 ﻿@using Telerik.DataSource.Extensions
-@inject JsInteropService jsInteropService
 @inject IJSRuntime JSRuntime
 @using TelerikBlazorAppTestChart.Components.Common
 @using Toolbelt.Blazor.HotKeys2
@@ -82,7 +81,7 @@
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("initClusters");
+            
         }
     }
 

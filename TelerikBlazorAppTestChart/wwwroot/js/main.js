@@ -1,8 +1,116 @@
 ﻿$(document).ready(function () {
 });
 
-window.initClusters = () => {
-    //let splitter = initSplitter();
+/*window.initializeComponent = (name, parameters) => {
+    console.log({ name: name, parameters: parameters });
+    let observer = new MutationObserver(() => {
+        let targetElement = document.getElementById('quoteContainer');
+        if (targetElement) {
+            Blazor.rootComponents.add(targetElement, 'clusters-component', {});
+            observer.disconnect();
+
+            let observer1 = new MutationObserver(() => {
+                let targetElement = document.getElementById('splitter-container');
+                if (targetElement) {
+                    new Splitter("splitter-container");
+                    observer1.disconnect();
+                }
+            });
+            observer1.observe(document.body, { childList: true, subtree: true });
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+window.initializeComponent1 = (name, parameters) => {
+    console.log({ name: name, parameters: parameters });
+
+    let observer = new MutationObserver(() => {
+        let targetElement = document.getElementById('quoteContainer1');
+        if (targetElement) {
+            Blazor.rootComponents.add(targetElement, 'quote', {});
+            observer.disconnect(); // Stop observing after element is found
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+};*/
+
+
+window.initGoldenLayout = () => {
+
+    //myLayout.registerComponent('blazor-component', function (container, state) {
+    //    let componentId = "blazor-component-" + Math.random().toString(36).substr(2, 9);
+    //    container.getElement().html(`<div id="${componentId}"></div>`);
+
+    //    // Observe and add the Blazor component when available
+    //    let observer = new MutationObserver(() => {
+    //        let targetElement = document.getElementById(componentId);
+    //        if (targetElement) {
+    //            setTimeout(() => {
+    //                Blazor.rootComponents.add(targetElement, state.componentName, {});
+    //            }, 1000);
+    //            observer.disconnect();
+    //        }
+    //    });
+
+    //    observer.observe(document.body, { childList: true, subtree: true });
+    //});
+
+    var config = {
+        content: [{
+            type: 'row',
+            content: [
+                {
+                    type: 'component',
+                    componentName: 'windows-component',
+                    title: 'Windows 1',
+                    id: 'windows1'
+                },
+                {
+                    type: 'component',
+                    componentName: 'windows-component',
+                    title: 'Windows 2',
+                    id: 'windows2'
+                },
+                {
+                    type: 'component',
+                    componentName: 'windows-component',
+                    title: 'Windows 3',
+                    id: 'windows3'
+                }
+            ]
+        }]
+    };
+
+    var myLayout = new GoldenLayout(config);
+
+    myLayout.registerComponent('windows-component', function (container, state) {
+        //container.getElement().html('<h2>' + state.text + '</h2>');
+
+        // Observe and add the Blazor component when available
+        let observer = new MutationObserver(() => {
+            let els = document.getElementsByClassName('lm_content');
+            let sourceElement1 = document.getElementById('windows-1');
+            let sourceElement2 = document.getElementById('windows-2');
+            let sourceElement3 = document.getElementById('windows-3');
+            if (sourceElement1 && sourceElement2 && sourceElement3 && els.length == 3) {
+                let targetElement1 = els[0];
+                let targetElement2 = els[1];
+                let targetElement3 = els[2];
+                $(sourceElement1).appendTo($(targetElement1));
+                $(sourceElement2).appendTo($(targetElement2));
+                $(sourceElement3).appendTo($(targetElement3));
+                observer.disconnect();
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+
+    myLayout.init();
+
     new MainSplitter("main-splitter-container");
     new Splitter("splitter-container");
 };

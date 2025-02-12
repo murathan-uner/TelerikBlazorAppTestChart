@@ -12,22 +12,36 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="InteractiveServer" />
     <link rel="stylesheet" href="https://blazor.cdn.telerik.com/blazor/7.0.0/kendo-theme-default/swatches/default-ocean-blue.css" />
+
     <script src="https://blazor.cdn.telerik.com/blazor/7.0.0/telerik-blazor.min.js" defer></script>
 
+    @* goldenlayout *@
+        <link rel="stylesheet" href="goldenlayout/css/goldenlayout-base.css" />
+        <link rel="stylesheet" href="goldenlayout/css/goldenlayout-dark-theme.css" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="goldenlayout/js/goldenlayout.js"></script>
+        @* <script src="goldenlayout/js/goldenlayout.min.js"></script> *@
+    @* goldenlayout *@
 
-    @* <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jqueryui@1.11.1/jquery-ui.theme.css"> *@
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    @* <script type="text/javascript" src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script> *@
-    @* <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script> *@
+    <script src="_framework/blazor.web.js"></script>
+    <script src="/js/main-splitter.js"></script>
+    <script src="/js/splitter.js"></script>
+    <script src="/js/main.js"></script>
 </head>
 
 <body class="k-body">
     <Routes @rendermode="InteractiveServer" />
-    <script src="/js/main-splitter.js"></script>
-    <script src="/js/splitter.js"></script>
-    <script src="/js/main.js"></script>
-    <script src="_framework/blazor.web.js"></script>
+    @* <script src="_framework/blazor.web.js" autostart="false"></script> *@
 </body>
 
+@* <script>
+    Blazor
+        .start()
+        .then(() => {
+            var targetElement = document.getElementById("quoteContainer");
+            Blazor.rootComponents.add(targetElement, "Quote", {});
+        })
+        .catch((error) => console.error(error));
+</script> *@
 </html>
 
