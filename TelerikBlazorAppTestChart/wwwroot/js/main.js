@@ -1,42 +1,9 @@
-﻿$(document).ready(function () {
-});
-
-/*window.initializeComponent = (name, parameters) => {
-    console.log({ name: name, parameters: parameters });
-    let observer = new MutationObserver(() => {
-        let targetElement = document.getElementById('quoteContainer');
-        if (targetElement) {
-            Blazor.rootComponents.add(targetElement, 'clusters-component', {});
-            observer.disconnect();
-
-            let observer1 = new MutationObserver(() => {
-                let targetElement = document.getElementById('splitter-container');
-                if (targetElement) {
-                    new Splitter("splitter-container");
-                    observer1.disconnect();
-                }
-            });
-            observer1.observe(document.body, { childList: true, subtree: true });
-        }
+﻿window.registerViewportChangeCallbackForChart = (dotnetHelper) => {
+    let _dotnetHelper = dotnetHelper;
+    window.addEventListener('resize', () => {
+        _dotnetHelper.invokeMethodAsync('OnResize', window.innerWidth, window.innerHeight);
     });
-
-    observer.observe(document.body, { childList: true, subtree: true });
 }
-
-window.initializeComponent1 = (name, parameters) => {
-    console.log({ name: name, parameters: parameters });
-
-    let observer = new MutationObserver(() => {
-        let targetElement = document.getElementById('quoteContainer1');
-        if (targetElement) {
-            Blazor.rootComponents.add(targetElement, 'quote', {});
-            observer.disconnect(); // Stop observing after element is found
-        }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-};*/
-
 
 window.initGoldenLayout = () => {
 
@@ -59,6 +26,9 @@ window.initGoldenLayout = () => {
     //});
 
     var config = {
+        settings: {
+            showPopoutIcon: false
+        },
         content: [{
             type: 'row',
             content: [
@@ -109,10 +79,45 @@ window.initGoldenLayout = () => {
         observer.observe(document.body, { childList: true, subtree: true });
     });
 
+    /// Callback for every created stack
+    myLayout.on('stackCreated', function (stack) {
+
+        //HTML for the colorDropdown is stored in a template tag
+        var colorDropdown = $($('template').html()),
+            colorDropdownBtn = colorDropdown.find('.selectedColor');
+
+        //var setColor = function (color) {
+        //    var container = stack.getActiveContentItem().container;
+
+        //    // Set the color on both the dropDown and the background
+        //    colorDropdownBtn.css('background-color', color);
+        //    container.getElement().css('background-color', color);
+
+        //    // Update the state
+        //    container.extendState({ color: color });
+        //};
+
+        // Add the colorDropdown to the header
+        stack.header.controlsContainer.prepend(colorDropdown);
+
+        // Update the color initially and whenever the tab changes
+        stack.on('activeContentItemChanged', function (contentItem) {
+            //setColor(contentItem.container.getState().color);
+        });
+
+        // Update the color when the user selects a different color
+        // from the dropdown
+        colorDropdown.find('li').click(function () {
+            //setColor($(this).css('background-color'));
+        });
+    });
+
     myLayout.init();
 
-    new MainSplitter("main-splitter-container");
-    new Splitter("splitter-container");
+    for (var i = 0; i < 3; i++) {
+        new MainSplitter("main-splitter-container-" + i);
+        new Splitter("clusters-container-" + i);
+    }
 };
 
 window.focusElementById = (windowId) => {

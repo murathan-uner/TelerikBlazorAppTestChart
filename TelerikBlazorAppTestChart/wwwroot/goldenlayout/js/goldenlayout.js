@@ -1022,6 +1022,13 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		for( i = 0; i < this._itemAreas.length; i++ ) {
 			area = this._itemAreas[ i ];
 
+			// [Murat 2025-02-12]
+			// Prevent side layout
+			if (area.side !== undefined) {
+				continue;
+			} 
+			//
+
 			if(
 				x > area.x1 &&
 				x < area.x2 &&
@@ -4545,6 +4552,13 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 		for( segment in this._contentAreaDimensions ) {
 			area = this._contentAreaDimensions[ segment ].hoverArea;
+
+			// [Murat 2025-02-12]
+			// Prevent column layout
+			if (segment == 'top' || segment == 'bottom') {
+				continue;
+			}
+			//
 
 			if( area.x1 < x && area.x2 > x && area.y1 < y && area.y2 > y ) {
 

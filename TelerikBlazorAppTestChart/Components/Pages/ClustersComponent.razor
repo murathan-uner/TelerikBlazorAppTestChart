@@ -4,58 +4,56 @@
 @using Toolbelt.Blazor.HotKeys2
 @inject HotKeys HotKeys 
 
-<div id="splitter-container">
-    <div class="split-pane" id="pane1">
-        <TelerikGrid @ref="Grid1"
-                     Id="@GridId1"
-                     EnableLoaderContainer="true"
-                     RowHeight="15"
-                     Height="100%"
-                     Data="@ClusterData1"
-                     TItem="@ChartComponent.TradeApi"
-                     ScrollMode="@GridScrollMode.Virtual"
-                     Pageable="false"
-                     Sortable="false"
-                     PageSize="150">
-            <GridColumns>
-                <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
-            </GridColumns>
-        </TelerikGrid>
-    </div>
-    <div class="split-pane" id="pane2">
-        <TelerikGrid @ref="Grid2"
-                     Id="@GridId2"
-                     EnableLoaderContainer="true"
-                     RowHeight="15"
-                     Height="100%"
-                     Data="@ClusterData2"
-                     TItem="@ChartComponent.TradeApi"
-                     ScrollMode="@GridScrollMode.Virtual"
-                     Pageable="false"
-                     Sortable="false"
-                     PageSize="150">
-            <GridColumns>
-                <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
-            </GridColumns>
-        </TelerikGrid>
-    </div>
-    <div class="split-pane" id="pane3">
-        <TelerikGrid @ref="Grid3"
-                     Id="@GridId3"
-                     EnableLoaderContainer="true"
-                     RowHeight="15"
-                     Height="100%"
-                     Data="@ClusterData3"
-                     TItem="@ChartComponent.TradeApi"
-                     ScrollMode="@GridScrollMode.Virtual"
-                     Pageable="false"
-                     Sortable="false"
-                     PageSize="150">
-            <GridColumns>
-                <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
-            </GridColumns>
-        </TelerikGrid>
-    </div>
+<div class="split-pane">
+    <TelerikGrid @ref="Grid1"
+                    Id="@GridId1"
+                    EnableLoaderContainer="true"
+                    RowHeight="15"
+                    Height="100%"
+                    Data="@ClusterData1"
+                    TItem="@ChartComponent.TradeApi"
+                    ScrollMode="@GridScrollMode.Virtual"
+                    Pageable="false"
+                    Sortable="false"
+                    PageSize="150">
+        <GridColumns>
+            <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+        </GridColumns>
+    </TelerikGrid>
+</div>
+<div class="split-pane">
+    <TelerikGrid @ref="Grid2"
+                    Id="@GridId2"
+                    EnableLoaderContainer="true"
+                    RowHeight="15"
+                    Height="100%"
+                    Data="@ClusterData2"
+                    TItem="@ChartComponent.TradeApi"
+                    ScrollMode="@GridScrollMode.Virtual"
+                    Pageable="false"
+                    Sortable="false"
+                    PageSize="150">
+        <GridColumns>
+            <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+        </GridColumns>
+    </TelerikGrid>
+</div>
+<div class="split-pane">
+    <TelerikGrid @ref="Grid3"
+                    Id="@GridId3"
+                    EnableLoaderContainer="true"
+                    RowHeight="15"
+                    Height="100%"
+                    Data="@ClusterData3"
+                    TItem="@ChartComponent.TradeApi"
+                    ScrollMode="@GridScrollMode.Virtual"
+                    Pageable="false"
+                    Sortable="false"
+                    PageSize="150">
+        <GridColumns>
+            <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
+        </GridColumns>
+    </TelerikGrid>
 </div>
 
 @code {

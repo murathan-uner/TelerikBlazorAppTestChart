@@ -14,7 +14,7 @@ OnRowRender="@RowRender"
     EnableLoaderContainer="true"
     OnStateChanged="@OnStateChanged"
     RowHeight="15"
-    Height="80vh"
+    Height="100%"
     Data="@Ticks"
     TItem="@ChartComponent.TradeApi"
     ScrollMode="@GridScrollMode.Virtual"
@@ -26,9 +26,6 @@ OnRowRender="@RowRender"
         <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
     </GridColumns>
 </TelerikGrid>
-
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@Scroll">Scroll</TelerikButton>
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@ChangeScale">CnahgeScale</TelerikButton>
 
 @code {
 
@@ -275,7 +272,6 @@ OnRowRender="@RowRender"
 
         if (Ticks != null && Ticks.Count > (int)gridState.GridState.Skip && scrolllog)
             Console.WriteLine($"ONSTATE price SCROLL = {Ticks[(int)gridState.GridState.Skip].Price}");
-
 
         // var skip = (int)TicksGrid.GetState().Skip;
 

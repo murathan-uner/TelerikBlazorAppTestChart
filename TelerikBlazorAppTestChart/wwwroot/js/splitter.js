@@ -5,18 +5,20 @@
         this.panes = Array.from(this.container.getElementsByClassName("split-pane"));
         this.gutters = [];
         this.containerBound = new DOMRect();
-        this.minSizes = [40, 40, 40];
-        this.originalRatios = [];
+        this.minSizes = [30, 30, 30];
+
+        this.ratios = [];
+        this.sizes = [];
+        this.h = -1;
+
         this.init();
     }
 
     init() {
         this.containerBound = this.container.getBoundingClientRect();
-        var paneWidth = this.containerBound.width / this.panes.length;
         for (let i = 0; i < this.panes.length; i++) {
-            this.panes[i].style.width = paneWidth + "px";
-            // Store initial size ratios
-            this.originalRatios[i] = paneWidth / this.containerBound.width;
+            this.ratios[i] = 1;
+            this.sizes[i] = 0;
         }
 
         // Create gutters dynamically
@@ -46,6 +48,9 @@
     }
 
     startDragging(event, index) {
+        event.preventDefault(); // Prevent default behaviors
+        event.stopPropagation(); // Stop event propagation
+
         this.dragging = true;
         this.currentGutterIndex = index;
         this.startX = event.clientX;
@@ -53,10 +58,17 @@
             this.panes[index].offsetWidth,
             this.panes[index + 1].offsetWidth,
         ];
+
+        // Disable text selection while dragging
+        document.body.style.userSelect = "none";
+
     }
 
     drag(event) {
         if (!this.dragging) return;
+
+        event.preventDefault(); // Prevent default behaviors
+        event.stopPropagation(); // Stop event propagation
 
         let dx = event.clientX - this.startX;
         let newWidth1 = this.startWidths[0] + dx;
@@ -90,7 +102,20 @@
             minSize1 = this.minSizes[1];
             minSize2 = this.minSizes[2];
         }
-        if (newWidth1 > minSize1 && newWidth2 > minSize2) {
+        if (newWidth2 < minSize2) {
+            newWidth2 = minSize2;
+            this.containerBound = this.container.getBoundingClientRect();
+            if (this.currentGutterIndex == 1) {
+                newWidth1 = this.containerBound.width - this.panes[0].offsetWidth - minSize2;
+            } else if (this.currentGutterIndex == 0) {
+                newWidth1 = this.containerBound.width - this.panes[2].offsetWidth - minSize2;
+            }
+        }
+
+        if (newWidth1 >= minSize1 && newWidth2 >= minSize2) {
+            if (this.currentGutterIndex == 0) {
+            } else {
+            }
             this.panes[this.currentGutterIndex].style.width = newWidth1 + "px";
             this.panes[this.currentGutterIndex + 1].style.width = newWidth2 + "px";
             this.positionGutter(this.currentGutterIndex); // Update gutter position
@@ -98,8 +123,13 @@
 
     }
 
-    stopDragging() {
+    stopDragging(event) {
         this.dragging = false;
+        document.body.style.userSelect = ""; // Re-enable text selection
+
+        //if (event && event.target) {
+        //    event.target.releasePointerCapture(event.pointerId);
+        //}
 
         this.recalculateOriginalRatio();
     }
@@ -108,75 +138,91 @@
         this.containerBound = this.container.getBoundingClientRect();
         let totalWidth = this.containerBound.width;
 
-        let newSizes = [];
-        // Adjust pane widths based on original ratios
-        this.panes.forEach((pane, i) => {
-            let newWidth = totalWidth * this.originalRatios[i];
-            newSizes[i] = newWidth;
-        });
-        if (newSizes[0] < 1) {
-            // pane1 is collapsed
-            newSizes[0] = 1;
-            newSizes[2] = totalWidth - newSizes[1] - 1;
-        }
-        if (newSizes[1] < 1) {
-            // pane2 is collapsed
-            newSizes[1] = 1;
-            newSizes[2] = totalWidth - 1;
-        }
-        //console.log("0: " + newSizes[0] + " 1: " + newSizes[1] + "2: " + newSizes[2]);
+        let h = this.h;
+        let n = this.panes.length;
+        let total = totalWidth - 1 * (h + 1);
 
-        // Keep bigger than minimum size
-        if (newSizes[2] < this.minSizes[2]) {
-            newSizes[2] = this.minSizes[2];
+        let ratioSum = 0;
+        for (let i = h + 1; i < n; i++) {
+            ratioSum += this.ratios[i];
+        }
+        for (let k = h + 1; k < n; k++) {
+            this.sizes[k] = totalWidth * this.ratios[k] / ratioSum;
         }
 
-        if (newSizes[1] < this.minSizes[1]) {
-            newSizes[1] = this.minSizes[1];
-        }
+        while (h < n) {
 
-        var isCollapsable = false;
-        // Check collapsable
-        //console.log("newSize0: " + newSizes[0]);
-        if (newSizes[0] == 1) {
+            let need_collapse = false;
 
-            let newSize1 = totalWidth - newSizes[2];
-            //console.log("newSize1: " + newSize1);
-            if (newSize1 < this.minSizes[1]) {
-                // collapse pane2
-                newSizes[1] = 1;
-                newSizes[2] = totalWidth - 1;
-                isCollapsable = true;
-                //console.log("newSize2: " + newSizes[2]);
-            } else {
-                newSizes[1] = newSize1;
-                //console.log("newSize1--: " + newSize1);
+            // 1
+            for (let k = h + 1; k < n; k++) {
+                if (this.sizes[k] < this.minSizes[k]) {
+                    this.sizes[k] = this.minSizes[k];
+
+                    /////////////////////////
+                    // distribute sizes
+                    /////////////////////////
+
+                    // calculate totalc, ratioSumc
+                    let sizesSumTemp = 0;
+                    let ratioSumc = 0;
+                    for (let i = h + 1; i < n; i++) {
+                        if (this.sizes[i] == this.minSizes[i]) {
+                            sizesSumTemp += this.sizes[i];
+                        } else {
+                            ratioSumc += this.ratios[i];
+                        }
+                    }
+                    let totalc = total - sizesSumTemp;
+
+                    if (totalc < 0) {
+                        need_collapse = true;
+                    } else {
+                        for (let p = h + 1; p < n; p++) {
+                            if (this.sizes[p] != this.minSizes[p]) {
+                                this.sizes[p] = totalc * this.ratios[p] / ratioSumc;
+                            }
+                        }
+                    }
+                }
             }
 
-        } else {
+            // 2
+            if (!need_collapse) {
+                for (let k = h + 1; k < n; k++) {
+                    if (this.sizes[k] < this.minSizes[k]) {
+                        need_collapse = true;
+                        break;
+                    }
+                }
+            }
 
-            let newSize0 = totalWidth - newSizes[1] - newSizes[2];
-            if (newSize0 < this.minSizes[0]) {
-                // collapse pane1
-                newSizes[0] = 1;
-                newSizes[1] = totalWidth - newSizes[2] - 1;
-                isCollapsable = true;
+            // 3
+            if (need_collapse) {
+                h++;
+                this.sizes[h] = 1;
+                this.ratios[h] = 0;
+                total = totalWidth - 1 * (h + 1);
+
+                let ratioSumc = 0;
+                for (let i = h + 1; i < n; i++) {
+                    ratioSumc += this.ratios[i];
+                }
+                for (let k = h + 1; k < n; k++) {
+                    this.sizes[k] = total * this.ratios[k] / ratioSumc;
+                }
             } else {
-                newSizes[0] = newSize0;
+                break;
             }
         }
 
-
         this.panes.forEach((pane, i) => {
-            pane.style.width = newSizes[i] + "px";
+            pane.style.width = this.sizes[i] + "px";
         });
 
         // Reposition gutters
         this.gutters.forEach((_, i) => this.positionGutter(i));
 
-        if (isCollapsable) {
-            this.recalculateOriginalRatio();
-        }
     }
 
     observeContainerResize() {
@@ -190,12 +236,8 @@
     recalculateOriginalRatio() {
         // recalculate the ratio
         for (let i = 0; i < this.panes.length; i++) {
-            this.originalRatios[i] = this.panes[i].offsetWidth / this.containerBound.width;
+            this.ratios[i] = this.panes[i].offsetWidth / this.containerBound.width;
         }
     }
-}
 
-// Initialize Splitter
-//document.addEventListener("DOMContentLoaded", () => {
-//    new Splitter("splitter-container");
-//});
+}

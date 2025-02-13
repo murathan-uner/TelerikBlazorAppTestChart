@@ -121,19 +121,8 @@
         padding-block: 0 !important;
         padding-inline: 0 !important;
     }
-    /*.k-tilelayout-item-header{
-            display: none;
-            }*/
     .k-grid-content {
         padding: 0px;
-    }
-
-    .k-tilelayout-item-body k-card-body {
-        padding: 0px;
-    }
-    /* Убираем паддинги для всего TileLayout */
-    .telerik-tilelayout {
-        padding: 0;
     }
 
     .gridlayout-item {
@@ -190,10 +179,6 @@
         --dxbl-grid-font-size: 10px;
     }
 
-    .chart {
-        height: 90vh;
-    }
-
     .cell-text {
         font-weight: 750 !important;
     }
@@ -238,19 +223,37 @@
 
 </style>
 
+<template type="text/html">
+    <div class="chooseColor">
+        <div class="selectedColor"></div>
+        <ul>
+            <li style="background: #014FA1"></li>
+            <li style="background: #1D84BD"></li>
+            <li style="background: #EEEEEE"></li>
+            <li style="background: #F15C25"></li>
+            <li style="background: #EB0506"></li>
+        </ul>
+    </div>
+</template>
+
 <div id="windows-1">
-    <WindowsComponent></WindowsComponent>
+    <WindowsComponent ElementId="@GenerateWindowsComponentElementID(0)"></WindowsComponent>
 </div>
 <div id="windows-2">
-    <WindowsComponent></WindowsComponent>
+    <WindowsComponent ElementId="@GenerateWindowsComponentElementID(1)"></WindowsComponent>
 </div>
 <div id="windows-3">
-    <WindowsComponent></WindowsComponent>
+    <WindowsComponent ElementId="@GenerateWindowsComponentElementID(2)"></WindowsComponent>
 </div>
 
 @code{
 
     @inject IJSRuntime JSRuntime;
+
+    private string GenerateWindowsComponentElementID(int index)
+    {
+        return "" + index;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

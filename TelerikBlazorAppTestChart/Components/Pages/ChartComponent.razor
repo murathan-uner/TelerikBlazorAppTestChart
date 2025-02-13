@@ -1,19 +1,20 @@
-﻿@using System.Timers
+﻿@using TelerikBlazorAppTestChart.Components.Common
+@using System.Timers
 @using Lock = System.Threading.Lock
-@using TelerikBlazorAppTestChart.Components.Common
+@inject IJSRuntime JSRuntime
 
-<TelerikChart @ref="Chart2" Transitions="false" RenderAs="@RenderingMode.Canvas" Width="100%">
+<TelerikChart @ref="MainChart" Transitions="false" RenderAs="@RenderingMode.Canvas" Width="100%" Height="@Constants.VIEWPORT_HEIGHT_SIZE">
     <ChartLegend Visible="false"></ChartLegend>
     <ChartPannable Enabled="true"></ChartPannable>
     <ChartSeriesItems>
 
-        @*   <ChartSeries Type="ChartSeriesType.Line"
-                     Data="@Ticks2"
-                     Field="@nameof(TradeApi.Price)"
-                     ColorField="@nameof(TradeApi.Color)"> *@
+        @* <ChartSeries Type="ChartSeriesType.Line"
+                    Data="@Ticks2"
+                    Field="@nameof(TradeApi.Price)"
+                    ColorField="@nameof(TradeApi.Color)"></ChartSeries> *@
 
         <ChartSeries Type="ChartSeriesType.Bubble"
-                     Data="@Ticks2"
+                     Data="@TicksStandard"
                      YField="@nameof(TradeApi.Price)"
                      XField="@nameof(TradeApi.IndexForChart)"
                      SizeField="@nameof(TradeApi.Volume)"
@@ -23,7 +24,7 @@
         <ChartSeries Type="ChartSeriesType.ScatterLine"
                      Data="@Ticks"
                      YField="@nameof(TradeApi.Price)"
-                     XField="@nameof(TradeApi.IndexForChart)">
+                     XField="@nameof(TradeApi.IndexForChart)" Padding="0" Margin="0">
 
             <ChartSeriesMarkers Visible="false">
             </ChartSeriesMarkers>
@@ -33,8 +34,8 @@
                          AutoFit="false"
                          YField="@nameof(TradeApi.Price)"
                          XField="@nameof(TradeApi.IndexForChart)"
-                         SizeField="@nameof(TradeApi.Volume)"
-                         ColorField="@nameof(TradeApi.Color)">
+                         SizeField="@nameof(TradeApi.BubbleSize)"
+                         ColorField="@nameof(TradeApi.Color)" Padding="0" Margin="0">
                 <ChartSeriesLabels Visible="true"
                                    Template="chartSeriesLabelTemplate"
                                    AriaTemplate="chartSeriesAriaTemplate" />
@@ -58,7 +59,7 @@
     </ChartXAxes>
 
     <ChartYAxes>
-        <ChartYAxis Min="@minchart" Max="@maxchart" Visible="false">
+        <ChartYAxis Min="@ChartYMin" Max="@ChartYMax" Visible="false">
         </ChartYAxis>
     </ChartYAxes>
 
@@ -73,15 +74,169 @@
 
 @code {
 
-    //TODO: 1) странное масштабирование на старте
-    //TODO: 2) бага с исчезнование -> лицензия телерика
+        //TODO: 1) странное масштабирование на старте
+        //TODO: 2) бага с исчезнование -> лицензия телерика
 
     private double BaseChartSize = 33; // Reference size for scaling
 
-    private int BaseBubbleCount = Constants.DEFAULT_AMOUNT; // Base number of bubbles
-    private int MaxAmount = Constants.DEFAULT_AMOUNT; // Dynamically updated
+    private double ViewportWidth = 0;
+    private double ViewportHeight = 0;
+    private double VolumeRatio = 1;
+
+    private int BaseBubbleCount = Constants.DEFAULT_CHART_AMOUNT; // Base number of bubbles
+    private int MaxAmount = Constants.DEFAULT_CHART_AMOUNT; // Dynamically updated
+
+    private double ChartYMin { get; set; } = Constants.DEFAULT_CHART_Y_MIN;
+    private double ChartYMax { get; set; } = Constants.DEFAULT_CHART_Y_MAX;
+
+    private List<TradeApi> TicksStandard { get; set; }
+    private List<TradeApi> Ticks { get; set; }
+
+    private TelerikChart MainChart { get; set; }
 
     private Timer _timer;
+
+    int i = 1;
+
+    bool busy = false;
+
+    List<TradeApi> AllTicks = new List<TradeApi>();
+
+    protected override void OnInitialized()
+    {
+        _timer = new System.Timers.Timer(200);
+
+        Ticks = new List<TradeApi>();
+
+        // standard ticks
+        TicksStandard = new();
+        TicksStandard.Add(new TradeApi() { IndexForChart = 0, Volume = Constants.DEFAULT_CHART_MAX_VOLUME });
+        //
+
+        _timer.Elapsed += (s, e) =>
+        {
+
+            // lock (locker)
+            {
+                // if (busy)
+                // {
+                //     Console.WriteLine($"busy {i}");
+                //     return;
+                // }
+
+                // busy = true;
+
+                i++;
+                // if (i > 100)
+                //     i = 100;
+
+                var r = new Random().Next(0, 2);
+                var volume = new Random().Next(1, 100);
+                var tick = new TradeApi()
+                {
+                    IndexForChart = i,
+                    Price = new Random().Next(20, 70),
+                    SecurityId = "si-3.25",
+                    Side = Side.Buy,
+                    Time = DateTime.Now,
+                    Volume = volume,
+                        // BubbleSize = volume * ViewportHeightRatio
+                    BubbleSize = volume * VolumeRatio
+                };
+
+                if (r == 0)
+                    tick.Color = "red";
+                else
+                {
+                    tick.Color = "green";
+                }
+
+                AllTicks.Add(tick);
+
+                if (ONOFF)
+                {
+                    // Console.WriteLine($"index={tick.IndexForChart} | tick {tick.Price} ");
+                    ProcessTick(tick);
+                }
+
+                busy = false;
+            }
+        };
+        _timer.Start();
+
+        base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("window.registerViewportChangeCallbackForChart", DotNetObjectReference.Create(this));
+            // await JSRuntime.InvokeVoidAsync("registerElementSizeChangeCallback", [DotNetObjectReference.Create(this), "chart-pane"]);
+        }
+    }
+
+    [JSInvokable]
+    public void OnResize(int width, int height)
+    {
+        if (ViewportWidth == width && ViewportHeight == height) return;
+        ViewportWidth = width;
+        ViewportHeight = height;
+
+        // recalculate
+        var ViewportHeightRatio = Constants.DEFAULT_WINDOWS_HEIGHT / ViewportHeight;
+        // VolumeRatio = Constants.DEFAULT_CHART_Y_RANGE / (ChartYMax - ChartYMin);
+        VolumeRatio = ViewportHeightRatio;
+
+        // Console.WriteLine($"volume ratio: {VolumeRatio} {ViewportHeightRatio}");
+
+        ChartYMin = Constants.DEFAULT_CHART_Y_MIN_RATIO * ViewportHeight;
+        ChartYMax = Constants.DEFAULT_CHART_Y_MAX_RATIO * ViewportHeight;
+        var maxVolume = Constants.DEFAULT_CHART_MAX_VOLUME_RATIO * ViewportHeight;
+        TicksStandard[0].Volume = maxVolume;
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ProcessTick(TradeApi tick)
+    {
+        Ticks.Add(tick);
+
+        if (Ticks.Count > MaxAmount)
+        {
+            // Ticks.RemoveAt(1);
+            Ticks.RemoveRange(0, Ticks.Count - MaxAmount);
+        }
+
+        InvokeAsync(StateHasChanged); //.GetAwaiter().GetResult();
+                                      //InvokeAsync(Chart2.Refresh);
+    }
+
+    object locker = new object();
+
+    decimal higher = 0;
+    decimal lowre = 0;
+
+    private void OnMouseWheel()
+    {
+
+    }
+
+    bool ONOFF = true;
+    public void TurnOnOff()
+    {
+        ONOFF = !ONOFF;
+
+        var copylist = AllTicks.ToList();
+
+        foreach (var trade in copylist)
+        {
+            Console.WriteLine($"index={trade.IndexForChart} | tick {trade.Price} ");
+        }
+
+        AllTicks.Clear();
+    }
 
     public enum Side
     {
@@ -110,207 +265,12 @@
         public Side Side { get; set; }
 
         public double? Volume { get; set; }
+        public double BubbleSize { get; set; }
 
         public decimal Price { get; set; }
         public int IndexForChart { get; set; }
 
         public string Color { get; set; }
         public double Transparency { get; set; }
-    }
-
-    public List<TradeApi> Ticks { get; set; }
-    public List<TradeApi> Ticks2 { get; set; }
-
-    public TelerikChart Chart2 { get; set; }
-    double minchart { get; set; } = 0;
-    double maxchart { get; set; } = 300;
-
-    int i = 1;
-
-    bool busy = false;
-
-    List<TradeApi> AllTicks = new List<TradeApi>();
-
-    protected override void OnInitialized()
-    {
-        _timer = new System.Timers.Timer(200);
-
-        Ticks = new List<TradeApi>();
-
-        Ticks2 = new();
-        // Ticks2.Add(new TradeApi() { IndexForChart = 0, Volume = Constants.BASE_MAX_VOLUME, });
-
-        _timer.Elapsed += (s, e) =>
-        {
-
-            // lock (locker)
-            {
-                // if (busy)
-                // {
-                //     Console.WriteLine($"busy {i}");
-                //     return;
-                // }
-
-                // busy = true;
-
-                i++;
-                // if (i > 100)
-                //     i = 100;
-
-                var r = new Random().Next(0, 2);
-
-                var tick = new TradeApi()
-                {
-                    IndexForChart = i,
-                    Price = new Random().Next(20, 70),
-                    SecurityId = "si-3.25",
-                    Side = Side.Buy,
-                    Time = DateTime.Now,
-                    Volume = new Random().Next(1, 100)
-                };
-
-                if (r == 0)
-                    tick.Color = "red";
-                else
-                {
-                    tick.Color = "green";
-                }
-
-                AllTicks.Add(tick);
-
-                if (ONOFF)
-                {
-                    // Console.WriteLine($"index={tick.IndexForChart} | tick {tick.Price} ");
-                    ProcessTick(tick);
-                }
-
-                busy = false;
-            }
-        };
-        _timer.Start();
-
-        base.OnInitialized();
-    }
-
-    public void ChangeScale()
-    {
-        MaxAmount = MaxAmount / 2;
-        InvokeAsync(StateHasChanged);
-    }
-
-    public void ChangeScale2()
-    {
-        MaxAmount = MaxAmount * 2;
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void ProcessTick(TradeApi tick)
-    {
-        Ticks.Add(tick);
-
-        if (Ticks.Count > MaxAmount)
-        {
-            // Ticks.RemoveAt(1);
-            Ticks.RemoveRange(0, Ticks.Count - MaxAmount);
-        }
-
-        InvokeAsync(StateHasChanged); //.GetAwaiter().GetResult();
-                                      //InvokeAsync(Chart2.Refresh);
-    }
-
-    object locker = new object();
-
-    decimal higher = 0;
-    decimal lowre = 0;
-
-
-    int click1 = 0;
-    public void GoUp()
-    {
-        click1++;
-
-        minchart += 25;
-        maxchart += 25;
-        // lock (locker)
-        // {
-
-
-        //     foreach (var tick in Ticks)
-        //     {
-        //         tick.Price += 3;
-        //     }
-        // }
-
-        // if(click1==1)
-        // InvokeAsync(StateHasChanged);
-        // else
-        Chart2.Refresh();
-
-    }
-
-    public void GoDown()
-    {
-        click1++;
-
-        minchart -= 25;
-        maxchart -= 25;
-
-        // if(click1==1)
-        //
-        // else
-        Chart2.Refresh();
-
-        // lock (locker)
-        // {
-
-        //     foreach (var tick in Ticks)
-        //     {
-        //         tick.Price -= 3;
-        //     }
-        // }
-    }
-
-    private void OnMouseWheel()
-    {
-
-    }
-
-    bool ONOFF = true;
-    public void TurnOnOff()
-    {
-        ONOFF = !ONOFF;
-
-        var copylist = AllTicks.ToList();
-
-        foreach (var trade in copylist)
-        {
-            Console.WriteLine($"index={trade.IndexForChart} | tick {trade.Price} ");
-        }
-
-        AllTicks.Clear();
-    }
-
-    private double? ChangeSize(TradeApi trade)
-    {
-        return 10;
-    }
-
-    public void OnChartSizeChanged(string size)
-    {
-        // Convert size to a numeric percentage (if size is given in %, remove the % symbol)
-        if (size.EndsWith("%"))
-        {
-            size = size.Replace("%", "");
-        }
-
-        if (double.TryParse(size, out double newSize))
-        {
-            // Calculate new maxamount dynamically
-            // MaxAmount = Math.Max(1, (int)(BaseBubbleCount * newSize / BaseChartSize));
-
-            // InvokeAsync(StateHasChanged);
-
-            Console.WriteLine($"Max amount: {MaxAmount}");
-        }
     }
 }

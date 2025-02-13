@@ -1,22 +1,29 @@
 ﻿class MainSplitter {
 
     constructor(containerId) {
+
+        this.paneSizeRatios = [1, 1.2, 0.6];
+        this.minSizes = [40, 40, 40];
+
+
         this.container = document.getElementById(containerId);
         this.panes = Array.from(this.container.getElementsByClassName("main-split-pane"));
         this.gutters = [];
         this.containerBound = new DOMRect();
-        this.minSizes = [40, 40, 40];
         this.originalRatios = [];
         this.init();
     }
 
     init() {
         this.containerBound = this.container.getBoundingClientRect();
-        var paneWidth = this.containerBound.width / this.panes.length;
+
+        //let ratioSum = this.paneSizeRatios.reduce((x, y) => {
+        //    return x + y;
+        //})
         for (let i = 0; i < this.panes.length; i++) {
-            this.panes[i].style.width = paneWidth + "px";
-            // Store initial size ratios
-            this.originalRatios[i] = paneWidth / this.containerBound.width;
+            //let paneWidth = this.containerBound.width * this.paneSizeRatios[i] / ratioSum;
+            //this.panes[i].style.width = paneWidth + "px";
+            this.originalRatios[i] = this.paneSizeRatios[i];
         }
 
         // Create gutters dynamically
@@ -46,6 +53,9 @@
     }
 
     startDragging(event, index) {
+        event.preventDefault(); // Prevent default behaviors
+        event.stopPropagation(); // Stop event propagation
+
         this.dragging = true;
         this.currentGutterIndex = index;
         this.startX = event.clientX;
@@ -53,10 +63,16 @@
             this.panes[index].offsetWidth,
             this.panes[index + 1].offsetWidth,
         ];
+
+        // Disable text selection while dragging
+        document.body.style.userSelect = "none";
     }
 
     drag(event) {
         if (!this.dragging) return;
+
+        event.preventDefault(); // Prevent default behaviors
+        event.stopPropagation(); // Stop event propagation
 
         let dx = event.clientX - this.startX;
         let newWidth1 = this.startWidths[0] + dx;
@@ -98,6 +114,7 @@
 
     stopDragging() {
         this.dragging = false;
+        document.body.style.userSelect = ""; // Re-enable text selection
     }
 
     resizeHandler() {
@@ -105,10 +122,14 @@
         let totalWidth = this.containerBound.width;
 
         // Adjust pane widths based on original ratios
-        this.panes.forEach((pane, i) => {
-            let newWidth = totalWidth * this.originalRatios[i];
-            pane.style.width = Math.max(newWidth, this.minSizes[i]) + "px";
-        });
+
+        let ratioSum = this.originalRatios.reduce((x, y) => {
+            return x + y;
+        })
+        for (let i = 0; i < this.panes.length; i++) {
+            let paneWidth = this.containerBound.width * this.originalRatios[i] / ratioSum;
+            this.panes[i].style.width = paneWidth + "px";
+        }
 
         // Reposition gutters
         this.gutters.forEach((_, i) => this.positionGutter(i));
@@ -122,8 +143,3 @@
         resizeObserver.observe(this.container);
     }
 }
-
-// Initialize Splitter
-//document.addEventListener("DOMContentLoaded", () => {
-//    new Splitter("splitter-container");
-//});

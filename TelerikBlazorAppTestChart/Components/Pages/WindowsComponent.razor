@@ -5,16 +5,13 @@
 
 </style>
 
-@* <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@PlusSize">Plus</TelerikButton>
-<TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@MinusSize">Minus</TelerikButton> *@
-
-<div id="main-splitter-container">
-    <div class="main-split-pane" id="clusters-pane">
-        <ClustersComponent @ref="ClustersComponent">
-        </ClustersComponent>
+<div id="@("main-splitter-container-" + ElementId)" class="main-splitter-container">
+    <div class="main-split-pane splitter-container clusters-pane" id="@("clusters-container-" + ElementId)">
+        <ClustersComponent @ref="ClustersComponent"></ClustersComponent>
     </div>
-    <div class="main-split-pane" id="chart-pane">
-        <TelerikStackLayout Class="chart-wrapper-wrapper" Height="@(ChartPaneHeight + "px")">
+    <div class="main-split-pane chart-pane" id="@("chart-container-" + ElementId)">
+        @* <TelerikStackLayout Class="chart-wrapper-wrapper" Height="@(ChartPaneHeight + "px")"> *@
+        <TelerikStackLayout Class="chart-wrapper-wrapper" Height="@Constants.VIEWPORT_HEIGHT_SIZE">
             <TelerikStackLayout Class="chart-wrapper" Width="@(ChartPaneFullWidth + "px")">
                 <div>
                     <ChartComponent @ref="ChartComponent"></ChartComponent>
@@ -22,12 +19,14 @@
             </TelerikStackLayout>
         </TelerikStackLayout>
     </div>
-    <div class="main-split-pane" id="tick-pane">
+    <div class="main-split-pane quotes-pane" id="@("quotes-container-" + ElementId)">
         <QuotesComponent @ref="QuotesComponent"></QuotesComponent>
     </div>
 </div>
 
 @code{
+    [Parameter]
+    public string ElementId { get; set; } = string.Empty;
 
     string gridsizestting => gridsize.ToString() + "%";
     int gridsize = 47;
@@ -53,12 +52,13 @@
         if (firstRender)
         {
             // Get the actual pixel size of the chart-pane
-            var dimensionsRoot = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeById", ["main-splitter-container"]);
-            var dimensionsChartPane = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeById", ["chart-pane"]);
-            var dimensionsChartWrapper = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeByClass", ["chart-wrapper"]);
-            ChartPaneFullWidth = dimensionsRoot.Width;
+            // var dimensionsRoot = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeById", [$"main-splitter-container-{ElementId}"]);
+            var dimensionsChartPane = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeById", [$"chart-container-{ElementId}"]);
+            // var dimensionsChartWrapper = await JSRuntime.InvokeAsync<ChartSize>("getElementSizeByClass", ["chart-wrapper"]);
+            // ChartPaneFullWidth = dimensionsRoot.Width;
+            ChartPaneFullWidth = (int) Constants.DEFAULT_CHART_FULL_WIDTH;
             ChartPaneWidth = dimensionsChartPane.Width;
-            ChartPaneHeight = dimensionsChartWrapper.Height;
+            // ChartPaneHeight = dimensionsChartWrapper.Height;
 
             // await JSRuntime.InvokeVoidAsync("initWindowsComponent");
             StateHasChanged();
@@ -92,22 +92,6 @@
     private void TurnOnOff()
     {
         ChartComponent.TurnOnOff();
-    }
-    private void GoUp()
-    {
-        ChartComponent.GoUp();
-    }
-    private void GoDown()
-    {
-        ChartComponent.GoDown();
-    }
-    private void ChangeScale()
-    {
-        ChartComponent.ChangeScale();
-    }
-    private void ChangeScale2()
-    {
-        ChartComponent.ChangeScale2();
     }
     #endregion
 }
