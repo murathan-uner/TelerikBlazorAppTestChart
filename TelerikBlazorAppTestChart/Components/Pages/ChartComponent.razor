@@ -113,6 +113,7 @@
         TicksStandard.Add(new TradeApi() { IndexForChart = 0, Volume = Constants.DEFAULT_CHART_MAX_VOLUME });
         //
 
+
         _timer.Elapsed += (s, e) =>
         {
 
@@ -133,6 +134,7 @@
                 var r = new Random().Next(0, 2);
                 var volume = new Random().Next(1, 100);
                 var tick = new TradeApi()
+
                 {
                     IndexForChart = i,
                     Price = new Random().Next(20, 70),
