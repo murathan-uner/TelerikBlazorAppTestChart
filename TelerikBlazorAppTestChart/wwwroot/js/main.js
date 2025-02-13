@@ -62,9 +62,9 @@ window.initGoldenLayout = () => {
         // Observe and add the Blazor component when available
         let observer = new MutationObserver(() => {
             let els = document.getElementsByClassName('lm_content');
-            let sourceElement1 = document.getElementById('windows-1');
-            let sourceElement2 = document.getElementById('windows-2');
-            let sourceElement3 = document.getElementById('windows-3');
+            let sourceElement1 = document.getElementById('windows-0');
+            let sourceElement2 = document.getElementById('windows-1');
+            let sourceElement3 = document.getElementById('windows-2');
             if (sourceElement1 && sourceElement2 && sourceElement3 && els.length == 3) {
                 let targetElement1 = els[0];
                 let targetElement2 = els[1];

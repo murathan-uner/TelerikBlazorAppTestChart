@@ -1,6 +1,6 @@
-﻿@using TelerikBlazorAppTestChart.Components.Common
+﻿@using System.Collections.Concurrent
+@using TelerikBlazorAppTestChart.Components.Common
 @using System.Timers
-@using Lock = System.Threading.Lock
 @inject IJSRuntime JSRuntime
 
 <TelerikChart @ref="MainChart" Transitions="false" RenderAs="@RenderingMode.Canvas" Width="100%" Height="@Constants.VIEWPORT_HEIGHT_SIZE">
@@ -74,8 +74,8 @@
 
 @code {
 
-        //TODO: 1) странное масштабирование на старте
-        //TODO: 2) бага с исчезнование -> лицензия телерика
+    //TODO: 1) странное масштабирование на старте
+    //TODO: 2) бага с исчезнование -> лицензия телерика
 
     private double BaseChartSize = 33; // Reference size for scaling
 
@@ -89,84 +89,86 @@
     private double ChartYMin { get; set; } = Constants.DEFAULT_CHART_Y_MIN;
     private double ChartYMax { get; set; } = Constants.DEFAULT_CHART_Y_MAX;
 
-    private List<TradeApi> TicksStandard { get; set; }
-    private List<TradeApi> Ticks { get; set; }
+    private ConcurrentQueue<TradeApi> TickQueue = new();
+    private List<TradeApi> Ticks { get; set; } = new();
+
+    private List<TradeApi> TicksStandard { get; set; } = new();
+    private List<TradeApi> AllTicks = new();
 
     private TelerikChart MainChart { get; set; }
 
-    private Timer _timer;
+    private Timer DataTimer;
+    private Timer RefreshTimer;
 
-    int i = 1;
+    private Random _random = new();
 
-    bool busy = false;
+    private int i = 1;
 
-    List<TradeApi> AllTicks = new List<TradeApi>();
 
     protected override void OnInitialized()
     {
-        _timer = new System.Timers.Timer(200);
-
-        Ticks = new List<TradeApi>();
 
         // standard ticks
-        TicksStandard = new();
         TicksStandard.Add(new TradeApi() { IndexForChart = 0, Volume = Constants.DEFAULT_CHART_MAX_VOLUME });
         //
 
+        // Timer for adding new data
+        DataTimer = new System.Timers.Timer(200);
+        DataTimer.Elapsed += AddTick;
+        DataTimer.Start();
 
-        _timer.Elapsed += (s, e) =>
-        {
-
-            // lock (locker)
-            {
-                // if (busy)
-                // {
-                //     Console.WriteLine($"busy {i}");
-                //     return;
-                // }
-
-                // busy = true;
-
-                i++;
-                // if (i > 100)
-                //     i = 100;
-
-                var r = new Random().Next(0, 2);
-                var volume = new Random().Next(1, 100);
-                var tick = new TradeApi()
-
-                {
-                    IndexForChart = i,
-                    Price = new Random().Next(20, 70),
-                    SecurityId = "si-3.25",
-                    Side = Side.Buy,
-                    Time = DateTime.Now,
-                    Volume = volume,
-                        // BubbleSize = volume * ViewportHeightRatio
-                    BubbleSize = volume * VolumeRatio
-                };
-
-                if (r == 0)
-                    tick.Color = "red";
-                else
-                {
-                    tick.Color = "green";
-                }
-
-                AllTicks.Add(tick);
-
-                if (ONOFF)
-                {
-                    // Console.WriteLine($"index={tick.IndexForChart} | tick {tick.Price} ");
-                    ProcessTick(tick);
-                }
-
-                busy = false;
-            }
-        };
-        _timer.Start();
+        // Timer for refreshing the chart display
+        RefreshTimer = new System.Timers.Timer(100);
+        RefreshTimer.Elapsed += ProcessTicksFromQueue;
+        RefreshTimer.Start();
 
         base.OnInitialized();
+    }
+
+    private void ProcessTicksFromQueue(object? sender, ElapsedEventArgs e)
+    {
+        if (TickQueue.IsEmpty) return;
+
+        List<TradeApi> newTicks = new();
+        while (TickQueue.TryDequeue(out TradeApi tick))
+        {
+            newTicks.Add(tick);
+        }
+
+        if (newTicks.Count > 0)
+        {
+            InvokeAsync(() =>
+            {
+                Ticks.AddRange(newTicks);
+                if (Ticks.Count > MaxAmount)
+                {
+                    Ticks.RemoveRange(0, Ticks.Count - MaxAmount);
+                }
+                StateHasChanged();
+            });
+        }
+    }
+
+    private void AddTick(object? sender, ElapsedEventArgs e)
+    {
+        if (!ONOFF) return;
+
+        i++;
+        
+        var volume = _random.Next(1, 100);
+        var tick = new TradeApi()
+            {
+                IndexForChart = i,
+                Price = _random.Next(20, 70),
+                SecurityId = "si-3.25",
+                Side = Side.Buy,
+                Time = DateTime.Now,
+                Volume = volume,
+                BubbleSize = volume * VolumeRatio,
+                Color = _random.Next(0, 2) == 0 ? "red" : "green"
+            };
+
+        TickQueue.Enqueue(tick);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -201,22 +203,6 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private void ProcessTick(TradeApi tick)
-    {
-        Ticks.Add(tick);
-
-        if (Ticks.Count > MaxAmount)
-        {
-            // Ticks.RemoveAt(1);
-            Ticks.RemoveRange(0, Ticks.Count - MaxAmount);
-        }
-
-        InvokeAsync(StateHasChanged); //.GetAwaiter().GetResult();
-                                      //InvokeAsync(Chart2.Refresh);
-    }
-
-    object locker = new object();
-
     decimal higher = 0;
     decimal lowre = 0;
 
@@ -230,14 +216,14 @@
     {
         ONOFF = !ONOFF;
 
-        var copylist = AllTicks.ToList();
+        // var copylist = AllTicks.ToList();
 
-        foreach (var trade in copylist)
-        {
-            Console.WriteLine($"index={trade.IndexForChart} | tick {trade.Price} ");
-        }
+        // foreach (var trade in copylist)
+        // {
+        //     Console.WriteLine($"index={trade.IndexForChart} | tick {trade.Price} ");
+        // }
 
-        AllTicks.Clear();
+        // AllTicks.Clear();
     }
 
     public enum Side
