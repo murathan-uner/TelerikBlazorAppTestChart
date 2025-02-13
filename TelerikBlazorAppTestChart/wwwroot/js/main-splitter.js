@@ -3,14 +3,14 @@
     constructor(containerId) {
 
         this.paneSizeRatios = [1, 1.2, 0.6];
-        this.minSizes = [40, 40, 40];
+        this.minSizes = [30, 60, 60];
 
 
         this.container = document.getElementById(containerId);
         this.panes = Array.from(this.container.getElementsByClassName("main-split-pane"));
         this.gutters = [];
         this.containerBound = new DOMRect();
-        this.originalRatios = [];
+        this.ratios = [];
         this.init();
     }
 
@@ -23,7 +23,7 @@
         for (let i = 0; i < this.panes.length; i++) {
             //let paneWidth = this.containerBound.width * this.paneSizeRatios[i] / ratioSum;
             //this.panes[i].style.width = paneWidth + "px";
-            this.originalRatios[i] = this.paneSizeRatios[i];
+            this.ratios[i] = this.paneSizeRatios[i];
         }
 
         // Create gutters dynamically
@@ -115,6 +115,7 @@
     stopDragging() {
         this.dragging = false;
         document.body.style.userSelect = ""; // Re-enable text selection
+        this.recalculateOriginalRatio();
     }
 
     resizeHandler() {
@@ -123,13 +124,35 @@
 
         // Adjust pane widths based on original ratios
 
-        let ratioSum = this.originalRatios.reduce((x, y) => {
+        let ratioSum = this.ratios.reduce((x, y) => {
             return x + y;
-        })
-        for (let i = 0; i < this.panes.length; i++) {
-            let paneWidth = this.containerBound.width * this.originalRatios[i] / ratioSum;
-            this.panes[i].style.width = paneWidth + "px";
+        });
+
+        let widthSum = 0;
+
+        let paneWidth2 = this.containerBound.width * this.ratios[2] / ratioSum;
+        if (paneWidth2 < this.minSizes[2]) {
+            paneWidth2 = this.minSizes[2];
         }
+        this.panes[2].style.width = paneWidth2 + "px";
+
+        let paneWidth1 = this.containerBound.width * this.ratios[1] / ratioSum;
+        if (paneWidth1 < this.minSizes[1]) {
+            paneWidth1 = this.minSizes[1];
+        }
+
+        if (totalWidth - paneWidth1 - paneWidth2 < this.minSizes[0]) {
+            this.panes[0].style.width = "1px";
+            this.panes[1].style.width = (totalWidth - paneWidth2 - 1) + "px";
+        } else {
+            this.panes[0].style.width = (totalWidth - paneWidth1 - paneWidth2) + "px";
+            this.panes[1].style.width = paneWidth1 + "px";
+        }
+
+        //for (let i = 0; i < this.panes.length; i++) {
+        //    let paneWidth = this.containerBound.width * this.ratios[i] / ratioSum;
+        //    this.panes[i].style.width = paneWidth + "px";
+        //}
 
         // Reposition gutters
         this.gutters.forEach((_, i) => this.positionGutter(i));
@@ -141,5 +164,12 @@
         });
 
         resizeObserver.observe(this.container);
+    }
+
+    recalculateOriginalRatio() {
+        // recalculate the ratio
+        for (let i = 0; i < this.panes.length; i++) {
+            this.ratios[i] = this.panes[i].offsetWidth / this.containerBound.width;
+        }
     }
 }

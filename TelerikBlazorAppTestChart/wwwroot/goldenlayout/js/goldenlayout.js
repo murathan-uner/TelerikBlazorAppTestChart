@@ -4555,7 +4555,7 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 			// [Murat 2025-02-12]
 			// Prevent column layout
-			if (segment == 'top' || segment == 'bottom') {
+			if (segment == 'top' || segment == 'bottom' || segment == 'header') {
 				continue;
 			}
 			//

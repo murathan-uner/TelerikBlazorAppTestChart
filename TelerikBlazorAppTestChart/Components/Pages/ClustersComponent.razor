@@ -6,16 +6,17 @@
 
 <div class="split-pane">
     <TelerikGrid @ref="Grid1"
-                    Id="@GridId1"
-                    EnableLoaderContainer="true"
-                    RowHeight="15"
-                    Height="100%"
-                    Data="@ClusterData1"
-                    TItem="@ChartComponent.TradeApi"
-                    ScrollMode="@GridScrollMode.Virtual"
-                    Pageable="false"
-                    Sortable="false"
-                    PageSize="150">
+                Id="@GridId1"
+                Class="grid-cluster"
+                EnableLoaderContainer="true"
+                RowHeight="15"
+                Height="100%"
+                Data="@ClusterData1"
+                TItem="@ChartComponent.TradeApi"
+                ScrollMode="@GridScrollMode.Virtual"
+                Pageable="false"
+                Sortable="false"
+                PageSize="150">
         <GridColumns>
             <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
         </GridColumns>
@@ -23,16 +24,17 @@
 </div>
 <div class="split-pane">
     <TelerikGrid @ref="Grid2"
-                    Id="@GridId2"
-                    EnableLoaderContainer="true"
-                    RowHeight="15"
-                    Height="100%"
-                    Data="@ClusterData2"
-                    TItem="@ChartComponent.TradeApi"
-                    ScrollMode="@GridScrollMode.Virtual"
-                    Pageable="false"
-                    Sortable="false"
-                    PageSize="150">
+                Id="@GridId2"
+                Class="grid-cluster"
+                EnableLoaderContainer="true"
+                RowHeight="15"
+                Height="100%"
+                Data="@ClusterData2"
+                TItem="@ChartComponent.TradeApi"
+                ScrollMode="@GridScrollMode.Virtual"
+                Pageable="false"
+                Sortable="false"
+                PageSize="150">
         <GridColumns>
             <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
         </GridColumns>
@@ -40,16 +42,17 @@
 </div>
 <div class="split-pane">
     <TelerikGrid @ref="Grid3"
-                    Id="@GridId3"
-                    EnableLoaderContainer="true"
-                    RowHeight="15"
-                    Height="100%"
-                    Data="@ClusterData3"
-                    TItem="@ChartComponent.TradeApi"
-                    ScrollMode="@GridScrollMode.Virtual"
-                    Pageable="false"
-                    Sortable="false"
-                    PageSize="150">
+                Id="@GridId3"
+                Class="grid-cluster"
+                EnableLoaderContainer="true"
+                RowHeight="15"
+                Height="100%"
+                Data="@ClusterData3"
+                TItem="@ChartComponent.TradeApi"
+                ScrollMode="@GridScrollMode.Virtual"
+                Pageable="false"
+                Sortable="false"
+                PageSize="150">
         <GridColumns>
             <GridColumn Width="1fr" Field="@nameof(ChartComponent.TradeApi.Volume)" />
         </GridColumns>

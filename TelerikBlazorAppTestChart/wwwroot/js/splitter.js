@@ -9,7 +9,6 @@
 
         this.ratios = [];
         this.sizes = [];
-        this.h = -1;
 
         this.init();
     }
@@ -78,7 +77,8 @@
             if (newWidth1 <= this.minSizes[0]) {
                 // collapse pane1
                 this.panes[0].style.width = "1px";
-                this.panes[1].style.width = (this.containerBound.width - this.panes[2].offsetWidth - 1) + "px";
+                //this.panes[1].style.width = (this.containerBound.width - this.panes[2].offsetWidth - 1) + "px";
+                this.panes[1].style.width = (this.containerBound.width - this.panes[2].offsetWidth) + "px";
                 this.positionGutter(0);
                 return;
             }
@@ -87,7 +87,8 @@
                 if (this.panes[0].offsetWidth == 1 && newWidth1 <= this.minSizes[1]) {
                     // collapse pane2
                     this.panes[1].style.width = "1px";
-                    this.panes[2].style.width = (this.containerBound.width - 1) + "px";
+                    //this.panes[2].style.width = (this.containerBound.width - 1) + "px";
+                    this.panes[2].style.width = this.containerBound.width + "px";
                     this.positionGutter(1);
                     return;
                 }
@@ -113,9 +114,6 @@
         }
 
         if (newWidth1 >= minSize1 && newWidth2 >= minSize2) {
-            if (this.currentGutterIndex == 0) {
-            } else {
-            }
             this.panes[this.currentGutterIndex].style.width = newWidth1 + "px";
             this.panes[this.currentGutterIndex + 1].style.width = newWidth2 + "px";
             this.positionGutter(this.currentGutterIndex); // Update gutter position
@@ -126,11 +124,6 @@
     stopDragging(event) {
         this.dragging = false;
         document.body.style.userSelect = ""; // Re-enable text selection
-
-        //if (event && event.target) {
-        //    event.target.releasePointerCapture(event.pointerId);
-        //}
-
         this.recalculateOriginalRatio();
     }
 
@@ -138,17 +131,32 @@
         this.containerBound = this.container.getBoundingClientRect();
         let totalWidth = this.containerBound.width;
 
-        let h = this.h;
+        let h = -1;
         let n = this.panes.length;
-        let total = totalWidth - 1 * (h + 1);
+        let total = totalWidth;
+
+        let allCollapsed = true;
+        for (let i = 0; i < n; i++) {
+            if (this.ratios[i] != 0) {
+                allCollapsed = false;
+                break;
+            }
+        }
+        if (allCollapsed) {
+            for (let i = 0; i < n; i++) {
+                this.ratios[i] = 1;
+            }
+        }
 
         let ratioSum = 0;
-        for (let i = h + 1; i < n; i++) {
+        for (let i = 0; i < n; i++) {
             ratioSum += this.ratios[i];
         }
-        for (let k = h + 1; k < n; k++) {
+        for (let k = 0; k < n; k++) {
             this.sizes[k] = totalWidth * this.ratios[k] / ratioSum;
         }
+
+        //console.log(totalWidth);
 
         while (h < n) {
 
@@ -183,6 +191,21 @@
                                 this.sizes[p] = totalc * this.ratios[p] / ratioSumc;
                             }
                         }
+
+                        var existSmaller = false;
+                        var existBigger = false;
+                        for (let p = h + 1; p < n; p++) {
+                            if (this.sizes[p] < this.minSizes[p]) {
+                                existSmaller = true;
+                            } else if (this.sizes[p] > this.minSizes[p]) {
+                                existBigger = true;
+                            }
+                        }
+
+                        if (existSmaller && existBigger) {
+                            // check from beginning
+                            k = h + 1 - 1; // for ++
+                        }
                     }
                 }
             }
@@ -202,7 +225,8 @@
                 h++;
                 this.sizes[h] = 1;
                 this.ratios[h] = 0;
-                total = totalWidth - 1 * (h + 1);
+                //total = totalWidth - 1 * (h + 1);
+                total = totalWidth;
 
                 let ratioSumc = 0;
                 for (let i = h + 1; i < n; i++) {

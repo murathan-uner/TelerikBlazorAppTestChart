@@ -1,4 +1,18 @@
 /************/
+/*   Grid  */
+/************/
+.grid-cluster {
+    border: none !important;
+    border-right: 1px solid darkgray !important;
+}
+
+.chart-wrapper {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+}
+
+/************/
 /*   Chart  */
 /************/
 .chart-wrapper-wrapper {
@@ -15,6 +29,10 @@
 /************/
 /* Splitter */
 /************/
+.lm_splitter:hover {
+    background-color: darkgray !important;
+}
+
 .main-splitter-container {
     display: flex;
     width: 100%;
@@ -44,10 +62,9 @@
 }*/
 
 .split-gutter {
-    width: 6px; /* Visible gutter width */
+    width: 7px; /* Visible gutter width */
     cursor: ew-resize;
-/*    background: linear-gradient(to right, transparent 0px, transparent 2px, darkgray 2px, darkgray 4px, transparent 4px, transparent 6px);*/
-    background: linear-gradient(to right, transparent 0px, transparent 3px, darkgray 3px, darkgray 4px, transparent 4px, transparent 6px);
+/*    background: linear-gradient(to right, transparent 0px, transparent 3px, darkgray 3px, darkgray 4px, transparent 4px, transparent 7px);*/
     position: absolute;
     top: 0;
     bottom: 0;
