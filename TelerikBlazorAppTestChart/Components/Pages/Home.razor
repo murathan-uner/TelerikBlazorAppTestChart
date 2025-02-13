@@ -236,15 +236,15 @@
     </div>
 </template>
 
-<div id="windows-1">
-    <WindowsComponent ElementId="@GenerateWindowsComponentElementID(0)"></WindowsComponent>
-</div>
-<div id="windows-2">
-    <WindowsComponent ElementId="@GenerateWindowsComponentElementID(1)"></WindowsComponent>
-</div>
-<div id="windows-3">
-    <WindowsComponent ElementId="@GenerateWindowsComponentElementID(2)"></WindowsComponent>
-</div>
+@foreach (var i in Enumerable.Range(0, 3))
+{
+    var elementId = @GenerateWindowsComponentElementID(i);
+    var key = "windows-" + elementId;
+
+    <div id="@key">
+        <WindowsComponent ElementId="@elementId" @key="key"></WindowsComponent>
+    </div>
+}
 
 @code{
 
